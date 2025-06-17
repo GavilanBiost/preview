@@ -1,0 +1,3135 @@
+---
+title: "CQI Sintaxis"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_knit$set(root.dir = "E:/Trabajo/1. UNH/Articulos/1. En Preparación/1. Articulos/2. Co-Autor/Predimed/Indira/CQI - Met - DT2_ECV_Mort")
+#knitr::opts_knit$set(root.dir = "/Volumes/Trabajo SSD/Trabajo/1. UNH/Articulos/1. En Preparación/1. Articulos/2. Co-Autor/Predimed/Indira/CQI - Met - DT2_ECV_Mort")
+```
+
+# 0. Librerias
+
+```{r}
+library(doParallel)
+library(readxl)
+library(haven)
+library(Hmisc)
+library(missForest)
+library(rio)
+library(RNOmni)
+library(caret)
+library(dplyr)
+library(glmnet)
+library(readxl)
+library(Publish)
+library(survival)
+library(dplyr)
+library(VennDiagram)
+library(corrplot)
+library(fgsea)
+library(tibble)
+library(ggplot2)
+library(tidyr)
+library(regmedint)
+library(tableone)
+library(openxlsx)
+
+no_cores = detectCores()
+registerDoParallel(cores=no_cores-2)
+rm(no_cores)
+```
+
+# 1. Apertura de las bases de datos:
+
+```{r}
+met_basal <- read_excel("1. Analisis estadistico/1. Bases de datos/1. Originales/20250216_new_met_basal_Predimed_all.xlsx")
+FFQ <- read_sav("1. Analisis estadistico/1. Bases de datos/1. Originales/FFQ_PREDIMED_2012.SAV")
+```
+
+# 2. Cálculo de CQI:
+
+```{r}
+names(FFQ) <- iconv(names(FFQ), from = "latin1", to = "UTF-8")
+names(FFQ)[174] <- "vino_anejo"
+names(FFQ)[352] = "vino_anejo3"
+names(FFQ[169]) = "te"
+names(FFQ[347]) = "te3"
+```
+
+CQI = ratio HC sólidos/HC totales; fibra (g/d); GI; ratio granos completos/granos totales (granos completos, refinados y derivados). 1. Quintiles de cada variable. 2. Suma de quintiles (4-20)
+
+Granos completos:
+
+## 2.1. Baseline
+
+```{r}
+#colnames(FFQ)
+# Ratio HC sólidos/HC totales:
+# 1. Ratio solid/total (solid+liquid) carbohydrates
+
+# 1.1 Generar variable 'todovino'
+FFQ$todovino <- FFQ$mostos + FFQ$v_rosado + FFQ$v_moscatel + FFQ$v_tintojov + FFQ$vino_anejo + FFQ$v_blanco + FFQ$cavas
+
+# 1.2 Generar variable 'todowhisky'
+FFQ$todowhisky <- FFQ$licores + FFQ$whisky
+
+# 1.3 Calcular Carbohidratos líquidos
+FFQ$hc_liq <- (1/100) * (FFQ$leche_ent * 5 +  
+                           FFQ$leche_semi * 5 +
+                           FFQ$leche_desn * 5 +
+                           FFQ$batidos * 10.9 +
+                           FFQ$gazpach * 3 +
+                           FFQ$todovino * 1.1 +
+                           FFQ$cervezas * 2.4 +
+                           FFQ$todowhisky * 0.4 +
+                           FFQ$refrescos * 10.5 +
+                           FFQ$refrescsin * 0.07 +
+                           FFQ$z_natural * 11.5 +
+                           FFQ$z_frutasnat * 12 +
+                           FFQ$z_botella * 11.5 +
+                           FFQ$cafedesc * (5/100) * 11 +
+                           FFQ$cafes * 0.8 +
+                           FFQ$`tÃÂ©` * 0)
+
+# Ratio HC sólido/total
+FFQ$ratio_hc <- (FFQ$hc-FFQ$hc_liq)/FFQ$hc
+
+# 2. Ratio HC integrales/HC totales:
+FFQ$hc_ref <- (1/100) * (
+  FFQ$panblanco * 58 +
+  FFQ$cerealdes * 85.3 +
+  FFQ$arrozblan * 86 +
+  FFQ$espagueti * 82 +
+  FFQ$pizzas * 24.8 +
+  FFQ$g_maria * 76 +
+  FFQ$g_choco * 67.4 +
+  FFQ$magdalena * 65.5 +
+  FFQ$donut * 47.99 +
+  FFQ$croissant * 50 +
+  FFQ$bizcocho * 77.2 +
+  FFQ$pastel * 49.2 +
+  FFQ$churro * 40)
+
+FFQ$hc_int <- (1/100) * (
+  FFQ$paninteg * 49 +
+  FFQ$muesli * 62.5 +
+  FFQ$g_integral * 68.5)
+
+FFQ$ratio_cer <- FFQ$hc_int/(FFQ$hc_ref + FFQ$hc_int)
+
+# 3. Calculo de quintiles:
+
+FFQ$ratio_hcQ <- as.numeric(cut2(FFQ$ratio_hc, g=5))
+FFQ$ratio_cerQ <- as.numeric(cut2(FFQ$ratio_cer, g=5))
+FFQ$fibraQ <- as.numeric(cut2(FFQ$fibra, g=5))
+FFQ$igQ <- 6 - as.numeric(cut2(FFQ$ig, g=5))
+
+FFQ$CQI = FFQ$ratio_hcQ + FFQ$ratio_cerQ + FFQ$fibraQ + FFQ$igQ
+```
+
+## 2.2. 1 year
+
+```{r}
+#colnames(FFQ)
+# Ratio HC sólidos/HC totales:
+# 1. Ratio solid/total (solid+liquid) carbohydrates
+
+# 1.1 Generar variable 'todovino'
+FFQ$todovino3 <- FFQ$mostos3 + FFQ$v_rosado3 + FFQ$v_moscatel3 + FFQ$v_tintojov3 + FFQ$vino_anejo3 + FFQ$v_blanco3 + FFQ$cavas3
+
+# 1.2 Generar variable 'todowhisky'
+FFQ$todowhisky3 <- FFQ$licores3 + FFQ$whisky3
+
+# 1.3 Calcular Carbohidratos líquidos
+FFQ$hc_liq3 <- (1/100) * (FFQ$leche_ent3 * 5 +  
+                           FFQ$leche_semi3 * 5 +
+                           FFQ$leche_desn3 * 5 +
+                           FFQ$batidos3 * 10.9 +
+                           FFQ$gazpach3 * 3 +
+                           FFQ$todovino3 * 1.1 +
+                           FFQ$cervezas3 * 2.4 +
+                           FFQ$todowhisky3 * 0.4 +
+                           FFQ$refrescos3 * 10.5 +
+                           FFQ$refrescsin3 * 0.07 +
+                           FFQ$z_natural3 * 11.5 +
+                           FFQ$z_frutasnat3 * 12 +
+                           FFQ$z_botella3 * 11.5 +
+                           FFQ$cafedesc3 * (5/100) * 11 +
+                           FFQ$cafes3 * 0.8 +
+                           FFQ$`tÃÂ©3` * 0)
+
+# Ratio HC sólido/total
+FFQ$ratio_hc3 <- (FFQ$HC3-FFQ$hc_liq3)/FFQ$HC3
+
+# 2. Ratio HC integrales/HC totales:
+FFQ$hc_ref3 <- (1/100) * (
+  FFQ$panblanco3 * 58 +
+  FFQ$cerealdes3 * 85.3 +
+  FFQ$arrozblan3 * 86 +
+  FFQ$espagueti3 * 82 +
+  FFQ$pizzas3 * 24.8 +
+  FFQ$g_maria3 * 76 +
+  FFQ$g_choco3 * 67.4 +
+  FFQ$magdalena3 * 65.5 +
+  FFQ$donut3 * 47.99 +
+  FFQ$croissant3 * 50 +
+  FFQ$bizcocho3 * 77.2 +
+  FFQ$pastel3 * 49.2 +
+  FFQ$churro3 * 40)
+
+FFQ$hc_int3 <- (1/100) * (
+  FFQ$paninteg3 * 49 +
+  FFQ$muesli3 * 62.5 +
+  FFQ$g_integral3 * 68.5)
+
+FFQ$ratio_cer3 <- FFQ$hc_int3/(FFQ$hc_ref3 + FFQ$hc_int3)
+
+# 3. Calculo de quintiles:
+
+FFQ$ratio_hcQ3 <- as.numeric(cut2(FFQ$ratio_hc3, g=5))
+FFQ$ratio_cerQ3 <- as.numeric(cut2(FFQ$ratio_cer3, g=5))
+FFQ$fibraQ3 <- as.numeric(cut2(FFQ$fibra3, g=5))
+FFQ$igQ3 <- 6 - as.numeric(cut2(FFQ$IG3, g=5))
+
+FFQ$CQI3 = FFQ$ratio_hcQ3 + FFQ$ratio_cerQ3 + FFQ$fibraQ3 + FFQ$igQ3
+
+# 4. Creacion de data frame con las variables de interés:
+
+FFQ_CQI = FFQ[,c("id", "CQI", "ig", "cargluce")]
+
+summary(FFQ_CQI$CQI) #86 NAs, se imputan
+```
+
+Imputación de CQI, IG y cargaglucémica
+
+```{r}
+set.seed(1234)  
+df_imputed = missForest(as.matrix(FFQ_CQI[2:4], verbose = T, pararellize = "forest"))
+df_fimputed = data.frame(df_imputed$ximp)
+FFQ_CQI = cbind(FFQ_CQI[1], df_fimputed)
+```
+
+# 3. QC metabolitos:
+
+```{r}
+# Elimino los metabolitos de control, medicamentos y aditivos alimentarios 
+drop = c("c240pc","glycocholated4","thymined4","inosine15n4","phenylalanined8",
+         "valined8", "PC120120iSTD", #QC
+         "acetaminophen","atenolol","gabapentin","metformin","metronidazole",
+         "valsartan","verapamil","warfarin",#Drugs
+         "quinine","sulfamethoxazole",#Drugs
+         "cyclohexylamine","nacetylcysteinylacetaminoph", #food additives
+         "visit") #otros
+short_db = met_basal[,!(names(met_basal) %in% drop)]
+```
+
+```{r}
+# Porcentaje de NA por metabolito
+missing_by_metabolite = colMeans(is.na(short_db)) * 100
+
+# Porcentaje de NA por muestra
+missing_by_sample = rowMeans(is.na(short_db)) * 100
+```
+
+Se filtra por NAs superior al 20%:
+
+```{r}
+# Eliminar metabolitos con demasiados missing values:104/470
+max_na_percent = 20
+keep_metabolites = missing_by_metabolite < max_na_percent
+data_filtered = short_db[, keep_metabolites]
+
+# Eliminar muestras con demasiados missing values: 1/1871
+max_na_sample = 20  # por ejemplo, 30%
+keep_samples = missing_by_sample < max_na_sample
+data_filtered = data_filtered[keep_samples, ]
+```
+
+Se imputan los datos:
+
+```{r}
+set.seed(123)  
+df_imputed = missForest(as.matrix(data_filtered[2:545], verbose = T, pararellize = "forest"))
+df_fimputed = data.frame(df_imputed$ximp)
+df_fimputed = cbind(data_filtered[1], df_fimputed)
+export(df_fimputed, "1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250305_df_fimputed_Predimed_all.xlsx")
+```
+
+Normalización: inicio el proceso de normalización de la visita basal. Como en papers previos, procedo a utilizar la normalización ranknorm.
+
+```{r}
+# Aplico el algoritmo a toda la base de datos:
+IMP = apply(df_fimputed[2:545], 2, RankNorm)
+
+# Añado la columna de ids:
+BBDDmet = data.frame(cbind(df_fimputed[1], IMP))
+
+# Fusiono la base de datos de metabolitos con los datos de FFQ:
+BBDDmet = merge(BBDDmet, FFQ_CQI, by = "id") #11 NAs. Se imputan
+```
+
+Exportamos la BBDD
+
+```{r}
+export(BBDDmet, "1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250305_BBDDmet_rkn_basal.csv")
+```
+
+Limpiamos enviroment:
+
+```{r}
+rm(data_filtered, df_imputed, df_fimputed, IMP, pca_pre, drop, keep_metabolites, keep_samples, max_na_percent, max_na_sample, missing_by_metabolite, missing_by_sample)
+```
+
+# 4. Modelos ENR:
+
+## 4.1. CQI:
+
+### 4.1.1. Entrenamiento de los modelos:
+
+```{r}
+CQI = BBDDmet[2:544]
+```
+
+#### Estimacion del valor de alpha:
+
+```{r}
+# Plantamos la semilla:
+set.seed(12)
+
+# Creamos la aleatorización de las filas:
+rows = sample(nrow(CQI))
+# Ordenamos las filas para la aleatorización:
+CQI = CQI [rows,]
+# Creamos los cortes de la validación cruzada (leave-one-out):
+folds = cut(seq(1,nrow(CQI)),breaks=100,labels=FALSE)
+
+# Creamos las variables de aculumación:
+train.data = c()
+test.data = c()
+cv = c()
+bT = c()
+
+# Iniciamos el bucle de entrenamiento de hiperparámetros: nested cross-validation:
+for (i in 1:100) {
+  # Seleccionamos el corte de la BBDD que coincide con i:
+  training = which(folds==i, arr.ind=TRUE)
+  # Creamos un subconjunto para la iteración i que selecciona todas las filas no incluidas en training:
+  train.data[[i]] = CQI [-training, ]
+  # Validamos con las filas incluidas en training:
+  test.data[[i]] = CQI [training, ] 
+  # Hacemos la ENR binomial utilizando el subconjunto de entrenamiento. Hacemos validación cruzada interna con 5 particiones y probamos automaticamente 5 combinaciones de los hiperparámetros de optimización del modelo:
+  cv[[i]] = train(CQI ~ . , data = train.data[[i]],  method = "glmnet", trControl = trainControl("cv", number = 5), tuneLength = 5)
+  # Extraemos los resultados de la mejor combinación de hiperparámetros para la iteración i incluyendo la precisión de cada combinación
+  bT[[i]] = cbind(cv[[i]]$bestTune, RMSE=min(cv[[i]]$results$RMSE))
+}
+```
+
+Selección del mejor Alpha y lambda. En la tabla que obtenemos, seleccionamos la combinación con mayor precisión de los modelos entrenados:
+
+```{r}
+bT = data.frame(matrix(unlist(bT), ncol = 3, byrow= T))
+names(bT) = c("alpha","lambda","accuracy")
+bT = bT %>% arrange(desc(accuracy))
+l = bT$lambda[bT$accuracy== max(bT$accuracy)] #0.1835841
+#l = 0.1835841
+alp = bT$alpha[bT$accuracy== max(bT$accuracy)] #0.55
+#alp = 0.55
+```
+
+#### Selección de los metabolitos
+
+```{r}
+set.seed(32)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+fit_full=list()
+cvfit_full=list()
+variables_values_full=list()
+
+full_data=as.data.frame(CQI)
+X.full=full_data[1:542]
+X.full=as.matrix(X.full)
+Y.full = full_data$CQI
+
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration WHOLE DATASET ", i, '\n')
+  cat("##################################", '\n')
+  
+  fit_full[[i]] = glmnet(X.full, as.numeric(Y.full), lambda = l, family="gaussian", alpha=alp)
+  plot(fit_full[[i]])
+  
+  cvfit_full[[i]] = cv.glmnet(X.full, as.numeric(Y.full), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit_full[[i]])
+  
+  list_metabo_full=coef(cvfit_full[[i]], s = type.lambda)
+  
+  values_metabo_full=list_metabo_full@x
+  values_metabo_full=values_metabo_full[-1]
+  
+  listado_selected_full=c(list_metabo_full@i)
+  variables_model_full=as.data.frame(colnames(X.full))
+  variables_get_full=variables_model_full[listado_selected_full,]
+  variables_get_full=as.character(variables_get_full)
+  
+  variables_values_full[[i]]=cbind(variables_get_full, values_metabo_full)
+}
+```
+
+#### Extracción de los metabolitos
+
+```{R}
+# Convertimos el conjunto de datos 'CQI' en data.frame
+inter=as.data.frame(CQI)
+# Extraemos los nombres de las variables predictoras
+variables2=as.data.frame(colnames(inter[,2:(length(inter))])) 
+
+# Renombramos las variables:
+colnames(variables2)=c("variables_get_full")
+# Añadimos una columna auxiliar con 'NA'
+variables2$check=c('NA')
+
+# Inicializamos un data.frame que contendrá las variables seleccionadas en las iteraciones
+abc_set = data.frame(colnames(CQI))
+# Cambiamos el nombre de la columna creada:
+colnames(abc_set)[colnames(abc_set)=="colnames.CQI."] = "variables_get_full"
+
+# Creamos un bucle para combinar los resultados de cada iteracion en abc_set:
+for (i in 1:10) {
+  abc_set= merge(abc_set, variables_values_full[[i]], by = "variables_get_full", all.x = T)
+}
+colnames(abc_set) = c("variables_get_full","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10")
+
+# Contamos las iteraciones donde una variable fue seleccionada:
+metabos_NA_model=as.data.frame(10 - rowSums(is.na(abc_set)))
+metabos_NA_model=cbind(abc_set$variables_get_full, metabos_NA_model)
+# Añadimos un indicador de selección en todas las iteraciones
+colnames(metabos_NA_model)=c("variables_get_full", "Join")
+# Ordenamos por nombre de variable
+metabos_NA_model=metabos_NA_model[order(metabos_NA_model$variables_get_full),]
+
+# Volvemos a fusionar para añadir la columna nueva:
+abc_set=merge(abc_set, metabos_NA_model, by = "variables_get_full", all=T)
+colnames(abc_set)=c("variables_get_full", "It1", "It2", "It3", "It4", "It5", "It6", "It7", "It8", "It9", "It10", "JOIN")
+
+# Calculamos la media y la desviación estándar de los coeficientes de cada variable (mean, sd) utilizando los valores de las 10 iteraciones
+abc_set_values=abc_set[,2:11]
+str(abc_set[,2:11], list.len=(ncol(abc_set))-3)
+indx = sapply(abc_set[,2:11], is.character)
+abc_set_values[indx] = lapply(abc_set_values[indx], function(x) as.numeric(as.character(x)))
+abc_full=cbind("Metabolites"=abc_set[,1], abc_set_values, "JOIN"=abc_set[,12])
+abc_full$mean=apply(abc_full[,2:11], 1, function(x) { mean(x, na.rm=TRUE) })
+abc_full$sd=apply(abc_full[,2:11], 1, function(x) { sd(x, na.rm=TRUE) })
+
+# Seleccionamos las variables elegidas 10 veces:
+mean_values_metabo = abc_full[ which(abc_full$JOIN==10), c(1,13,14)]
+
+# Y exportamos el resultado:
+export(mean_values_metabo, "1. Analisis estadistico/3. Resultados/1. datos/CQI/Only coef_binomial_CQI.xlsx")
+
+# Creamos una matriz...
+mean_values_metabo_matrix=as.matrix(mean_values_metabo)
+# Cargamos el archivo con los nombres correctos de los metabolitos...
+match_names <- read_excel("1. Analisis estadistico/1. Bases de datos/1. Originales/20250215_names_VARS_extendido_sinpuntos.xlsx")
+```
+
+#### Figuras
+
+```{r}
+# Combinamos las estadísticas calculadas con los nombres descriptivos de las variables, añadiendo contexto a los resultados
+mean_values_metabo$Metabolites = tolower(mean_values_metabo$Metabolites)
+match_names$Metabolites = tolower(match_names$Metabolites)
+new_mean_values_metabo=merge(mean_values_metabo, match_names, by = "Metabolites")
+
+# Ordenamos los resultados por su valor medio:
+mean_values_metabo_sorted=mean_values_metabo[order(mean_values_metabo$mean),c(1,2,3)]
+dim(mean_values_metabo_sorted)[1]
+
+# Añadimos los nombres correctos:
+new_mean_values_metabo_sorted=merge(mean_values_metabo_sorted, match_names, by = "Metabolites")
+# Y transformamos el subconjunto en data frame:
+new_mean_values_metabo_sorted=data.frame("Metabolites"=new_mean_values_metabo_sorted$name, 
+                                         "mean"=new_mean_values_metabo_sorted$mean, 
+                                         "sd"=new_mean_values_metabo_sorted$sd)
+new_mean_values_metabo_sorted=new_mean_values_metabo_sorted[order(new_mean_values_metabo_sorted$mean),c(1,2,3)]
+
+# Creamos dos subconjuntos para valores positivos y negativos:
+selected_mean_values_metabo_sorted_negative=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean<0), ]
+
+selected_mean_values_metabo_sorted_positive=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean>=0), ]
+
+# Calculamos los valores extremos para indicarlo en la gráfica:
+minimo=min(selected_mean_values_metabo_sorted_negative$mean)
+maximo=max(selected_mean_values_metabo_sorted_positive$mean)
+
+# Creamos la gráfica para cada signo:
+plot_negative=ggplot(selected_mean_values_metabo_sorted_negative, aes(x = mean, y = reorder(Metabolites, -mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "left") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(-0.2, 0)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+plot_positive=ggplot(selected_mean_values_metabo_sorted_positive, aes(x = mean, y = reorder(Metabolites, +mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "right") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(0, 0.8)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+# Combinamos los gráficos y exportamos la imagen:
+require(gridExtra)
+png(filename = "1. Analisis estadistico/3. Resultados/2. figuras/coef_CQI.png", width = 30, height = 20, res=300, unit="cm")
+grid.arrange(plot_negative, plot_positive, ncol=2)
+dev.off()
+
+# Exportamos un excel con los metabolitos, sus medias y su SD ordenados:
+export(new_mean_values_metabo_sorted, "1. Analisis estadistico/3. Resultados/1. datos/CQI/20250311_CQI_coef.xlsx")
+```
+
+### 4.1.2. Validación interna
+
+#### Validación Training-testing
+
+Con esta parte del código obtenemos la validación propia del modelo implementando una validación cruzada de 10 particiones con 10 cv internas:
+
+```{r}
+# Reodenamos las filas del conjunto de datos, actualizamos el orden y divimos el conjunto en 10 trozos:
+rows = sample(nrow(CQI))
+CQI = CQI[rows, ]
+folds = cut(seq(1,nrow(CQI)),breaks=10,labels=FALSE)
+
+# Declaramos todas las variables que vamos a utilizar en el proceso:
+# Variables de almacenamiento de subconjuntos:
+set_train=list()
+set_test=list()
+X.train_saved=list()
+Y.train_saved=list()
+X.test_saved=list()
+Y.test_saved=list() 
+# variables de almacenamiento de modelos ajustados:
+cvfit=list()
+# Variables de almacenamiento de metabolitos y coeficientes:
+variables_values=list()
+
+# Comenzamos con las iteraciones. El bucle se ejecuta 10 veces donde cada iteración se le asigna un subgrupo como test y los 9 restantes se usan como subconjunto de entrenamiento:
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration TRAINING-testing ", i, '\n')
+  cat("##################################", '\n \n')
+  # Creación de los subconjuntos:
+  sample = which(folds==i,arr.ind=TRUE)
+  set_train[[i]] = CQI[-sample, ] 
+  set_test[[i]]  = CQI[sample, ]
+  # Separación de predictores y respuesta para el correcto funcionamiento del modelo:
+  a=as.data.frame(set_train[[i]])
+  train=a[1:542]
+  X.train = train
+  X.train = as.matrix(X.train)
+  Y.train = a$CQI
+  
+  a=as.data.frame(set_test[[i]])
+  test=a[1:542]
+  X.test = test
+  X.test = as.matrix(X.test)
+  Y.test = a$CQI
+  
+  X.train_saved[[i]]=X.train
+  Y.train_saved[[i]]=Y.train
+  X.test_saved[[i]]=X.test
+  Y.test_saved[[i]]=Y.test    
+  # Realizamos el modelo de validación cruzada 10 x 10 con el valor alfa entrenado previamente:
+  cvfit[[i]] = cv.glmnet(X.train, as.numeric(Y.train), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit[[i]])
+  # Extraemos los coeficientes y las variables seleccionadas:
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+}
+```
+
+#### Pearson para el training-testing
+
+```{r}
+corr_test_pearson=list()
+corr_test_spearman=list()
+correlaciones_tt=matrix(NA,10,4)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+si_model = 0 
+
+for (i in 1:10)
+{
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+  
+  if (dim(variables_values[[i]])[1] == 0)
+  {
+    cat("No metabolites found for iteration", i, '\n')
+  }
+  
+  if (dim(variables_values[[i]])[1] != 0)
+  {
+    corr_test_pearson[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="pearson")
+    corr_test_spearman[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="spearman")
+    
+    correlaciones_tt[i,1]=round(corr_test_pearson[[i]]$estimate,2)
+    correlaciones_tt[i,2]=round(corr_test_pearson[[i]]$conf.int[1],2)
+    correlaciones_tt[i,3]=round(corr_test_pearson[[i]]$conf.int[2],2)
+    correlaciones_tt[i,4]=round(corr_test_pearson[[i]]$p.value,3)
+    
+    si_model = cbind(si_model, i)
+  }
+}
+
+ci.mean(correlaciones_tt[,1],normal=T) #0.28 (0.24, 0.32)
+
+#export(correlaciones_tt, "1. Analisis estadistico/3. Resultados/1. datos/CQI/20250311_correlaciones_tt_CQI.xlsx")
+```
+
+#### Pearson del modelo
+
+```{r}
+correlacion_all = c()
+
+X2 = data.frame(BBDDmet[,2:543])
+colnames(X2) = tolower(colnames(X2))
+Y2 = BBDDmet$CQI
+b = mean_values_metabo
+b$Metabolites = tolower(b$Metabolites)
+
+if (length(b) != 0) {
+  stdout  = vector('character')
+  con = textConnection('stdout', 'wr', local = TRUE)
+  sink(con)
+  for (i in 1:(dim(b)[1]))
+  {
+    if (i == 1) {cat("X2$model=", sep="")}
+    if ((i < (dim(b)[1])) & (i > 0)) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")"," +", "\n", sep="")}
+    if (i == (dim(b)[1])) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")", sep="")}
+  }
+  sink()
+  
+  close(con)
+  
+  stdout_full = paste(unlist(stdout), collapse =" ")
+  stdout_full[1]
+  
+  eval(parse(text=stdout_full[1]))
+  
+  modelo = X2$model
+  
+  correlacion_all = cor.test(Y2,modelo, conf.level = .95) #0.40 (0.36, 0.44)
+} 
+
+score_CQI= data.frame(cbind(id = BBDDmet$id, CQI = BBDDmet$CQI, CQI_est = modelo))
+
+export(score_CQI, "1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_CQI.xlsx")
+
+save.image(file = "1. Analisis estadistico/4. Workspace/20250311_CQI.RData")
+
+rm(a, abc_full, abc_set, abc_set_values, b, bT, corr_test_pearson, 
+   corr_test_spearman, correlacion_all, correlaciones_tt, cv, cvfit,
+   cvfit_full, CQI, fit, fit_full, full_data, inter, list_metabo, list_metabo_full,
+   mean_values_metabo, mean_values_metabo_sorted, mean_values_metabo_matrix, met, metabos_NA_model, model.met,
+   new_mean_values_metabo, new_mean_values_metabo_sorted, plot_negative, plot_positive, 
+   selected_mean_values_metabo_sorted_negative, selected_mean_values_metabo_sorted_positive, set_test, set_train,
+   si_model, test, test.data, train, train.data, variables_model, 
+   variables_model_full, variables_values, variables_values_full, variables2, X.full, X.test, X.test_saved, X.train,
+   X.train_saved, X2, Y.test_saved, Y.train_saved, alp, con, folds, i, indx, l, listado_selected, listado_selected_full,
+   maximo, minimo, modelo, rows, sample, stdout, stdout_full, training, type.lambda, values_metabo,
+   values_metabo_full, variables_get, variables_get_full, Y.full, Y.test, Y.train, Y2, score_CQI)
+```
+
+## 4.2. IG:
+
+### 4.2.1. Entrenamiento de los modelos:
+
+```{r}
+InG = cbind(BBDDmet[2:543],BBDDmet[545])
+```
+
+#### Estimacion del valor de alpha:
+
+```{r}
+# Plantamos la semilla:
+set.seed(12)
+
+# Creamos la aleatorización de las filas:
+rows = sample(nrow(InG))
+# Ordenamos las filas para la aleatorización:
+InG = InG [rows,]
+# Creamos los cortes de la validación cruzada (leave-one-out):
+folds = cut(seq(1,nrow(InG)),breaks=100,labels=FALSE)
+
+# Creamos las variables de aculumación:
+train.data = c()
+test.data = c()
+cv = c()
+bT = c()
+
+# Iniciamos el bucle de entrenamiento de hiperparámetros: nested cross-validation:
+for (i in 1:100) {
+  # Seleccionamos el corte de la BBDD que coincide con i:
+  training = which(folds==i, arr.ind=TRUE)
+  # Creamos un subconjunto para la iteración i que selecciona todas las filas no incluidas en training:
+  train.data[[i]] = InG [-training, ]
+  # Validamos con las filas incluidas en training:
+  test.data[[i]] = InG [training, ] 
+  # Hacemos la ENR binomial utilizando el subconjunto de entrenamiento. Hacemos validación cruzada interna con 5 particiones y probamos automaticamente 5 combinaciones de los hiperparámetros de optimización del modelo:
+  cv[[i]] = train(ig ~ . , data = train.data[[i]],  method = "glmnet", trControl = trainControl("cv", number = 5), tuneLength = 5)
+  # Extraemos los resultados de la mejor combinación de hiperparámetros para la iteración i incluyendo la precisión de cada combinación
+  bT[[i]] = cbind(cv[[i]]$bestTune, RMSE=min(cv[[i]]$results$RMSE))
+}
+```
+
+Selección del mejor Alpha y lambda. En la tabla que obtenemos, seleccionamos la combinación con mayor precisión de los modelos entrenados:
+
+```{r}
+bT = data.frame(matrix(unlist(bT), ncol = 3, byrow= T))
+names(bT) = c("alpha","lambda","accuracy")
+bT = bT %>% arrange(desc(accuracy))
+l = bT$lambda[bT$accuracy== max(bT$accuracy)] #0.5023003
+#l = 0.5023003
+alp = bT$alpha[bT$accuracy== max(bT$accuracy)] #0.325
+#alp = 0.325
+```
+
+#### Selección de los metabolitos
+
+```{r}
+set.seed(32)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+fit_full=list()
+cvfit_full=list()
+variables_values_full=list()
+
+full_data=as.data.frame(InG)
+X.full=full_data[1:542]
+X.full=as.matrix(X.full)
+Y.full = full_data$ig
+
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration WHOLE DATASET ", i, '\n')
+  cat("##################################", '\n')
+  
+  fit_full[[i]] = glmnet(X.full, as.numeric(Y.full), lambda = l, family="gaussian", alpha=alp)
+  plot(fit_full[[i]])
+  
+  cvfit_full[[i]] = cv.glmnet(X.full, as.numeric(Y.full), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit_full[[i]])
+  
+  list_metabo_full=coef(cvfit_full[[i]], s = type.lambda)
+  
+  values_metabo_full=list_metabo_full@x
+  values_metabo_full=values_metabo_full[-1]
+  
+  listado_selected_full=c(list_metabo_full@i)
+  variables_model_full=as.data.frame(colnames(X.full))
+  variables_get_full=variables_model_full[listado_selected_full,]
+  variables_get_full=as.character(variables_get_full)
+  
+  variables_values_full[[i]]=cbind(variables_get_full, values_metabo_full)
+}
+```
+
+#### Extracción de los metabolitos
+
+```{R}
+# Convertimos el conjunto de datos 'InG' en data.frame
+inter=as.data.frame(InG)
+# Extraemos los nombres de las variables predictoras
+variables2=as.data.frame(colnames(inter[,2:(length(inter))])) 
+
+# Renombramos las variables:
+colnames(variables2)=c("variables_get_full")
+# Añadimos una columna auxiliar con 'NA'
+variables2$check=c('NA')
+
+# Inicializamos un data.frame que contendrá las variables seleccionadas en las iteraciones
+abc_set = data.frame(colnames(InG))
+# Cambiamos el nombre de la columna creada:
+colnames(abc_set)[colnames(abc_set)=="colnames.InG."] = "variables_get_full"
+
+# Creamos un bucle para combinar los resultados de cada iteracion en abc_set:
+for (i in 1:10) {
+  abc_set= merge(abc_set, variables_values_full[[i]], by = "variables_get_full", all.x = T)
+}
+colnames(abc_set) = c("variables_get_full","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10")
+
+# Contamos las iteraciones donde una variable fue seleccionada:
+metabos_NA_model=as.data.frame(10 - rowSums(is.na(abc_set)))
+metabos_NA_model=cbind(abc_set$variables_get_full, metabos_NA_model)
+# Añadimos un indicador de selección en todas las iteraciones
+colnames(metabos_NA_model)=c("variables_get_full", "Join")
+# Ordenamos por nombre de variable
+metabos_NA_model=metabos_NA_model[order(metabos_NA_model$variables_get_full),]
+
+# Volvemos a fusionar para añadir la columna nueva:
+abc_set=merge(abc_set, metabos_NA_model, by = "variables_get_full", all=T)
+colnames(abc_set)=c("variables_get_full", "It1", "It2", "It3", "It4", "It5", "It6", "It7", "It8", "It9", "It10", "JOIN")
+
+# Calculamos la media y la desviación estándar de los coeficientes de cada variable (mean, sd) utilizando los valores de las 10 iteraciones
+abc_set_values=abc_set[,2:11]
+str(abc_set[,2:11], list.len=(ncol(abc_set))-3)
+indx = sapply(abc_set[,2:11], is.character)
+abc_set_values[indx] = lapply(abc_set_values[indx], function(x) as.numeric(as.character(x)))
+abc_full=cbind("Metabolites"=abc_set[,1], abc_set_values, "JOIN"=abc_set[,12])
+abc_full$mean=apply(abc_full[,2:11], 1, function(x) { mean(x, na.rm=TRUE) })
+abc_full$sd=apply(abc_full[,2:11], 1, function(x) { sd(x, na.rm=TRUE) })
+
+# Seleccionamos las variables elegidas 10 veces:
+mean_values_metabo = abc_full[ which(abc_full$JOIN==10), c(1,13,14)]
+
+# Y exportamos el resultado:
+export(mean_values_metabo, "1. Analisis estadistico/3. Resultados/1. datos/InG/Only coef_binomial_IG.xlsx")
+
+# Creamos una matriz...
+mean_values_metabo_matrix=as.matrix(mean_values_metabo)
+```
+
+#### Figuras
+
+```{r}
+# Combinamos las estadísticas calculadas con los nombres descriptivos de las variables, añadiendo contexto a los resultados
+mean_values_metabo$Metabolites = tolower(mean_values_metabo$Metabolites)
+match_names$Metabolites = tolower(match_names$Metabolites)
+new_mean_values_metabo=merge(mean_values_metabo, match_names, by = "Metabolites")
+
+# Ordenamos los resultados por su valor medio:
+mean_values_metabo_sorted=mean_values_metabo[order(mean_values_metabo$mean),c(1,2,3)]
+dim(mean_values_metabo_sorted)[1]
+
+# Añadimos los nombres correctos:
+new_mean_values_metabo_sorted=merge(mean_values_metabo_sorted, match_names, by = "Metabolites")
+# Y transformamos el subconjunto en data frame:
+new_mean_values_metabo_sorted=data.frame("Metabolites"=new_mean_values_metabo_sorted$name, 
+                                         "mean"=new_mean_values_metabo_sorted$mean, 
+                                         "sd"=new_mean_values_metabo_sorted$sd)
+new_mean_values_metabo_sorted=new_mean_values_metabo_sorted[order(new_mean_values_metabo_sorted$mean),c(1,2,3)]
+
+# Creamos dos subconjuntos para valores positivos y negativos:
+selected_mean_values_metabo_sorted_negative=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean<0), ]
+
+selected_mean_values_metabo_sorted_positive=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean>=0), ]
+
+# Calculamos los valores extremos para indicarlo en la gráfica:
+minimo=min(selected_mean_values_metabo_sorted_negative$mean)
+maximo=max(selected_mean_values_metabo_sorted_positive$mean)
+
+# Creamos la gráfica para cada signo:
+plot_negative=ggplot(selected_mean_values_metabo_sorted_negative, aes(x = mean, y = reorder(Metabolites, -mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "left") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(-0.7, 0)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+plot_positive=ggplot(selected_mean_values_metabo_sorted_positive, aes(x = mean, y = reorder(Metabolites, +mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "right") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(0, 0.4)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+# Combinamos los gráficos y exportamos la imagen:
+require(gridExtra)
+png(filename = "1. Analisis estadistico/3. Resultados/2. figuras/coef_IG.png", width = 30, height = 20, res=300, unit="cm")
+grid.arrange(plot_negative, plot_positive, ncol=2)
+dev.off()
+
+# Exportamos un excel con los metabolitos, sus medias y su SD ordenados:
+export(new_mean_values_metabo_sorted, "1. Analisis estadistico/3. Resultados/1. datos/InG/20250311_IG_coef.xlsx")
+```
+
+### 4.2.2. Validación interna
+
+#### Validación Training-testing
+
+Con esta parte del código obtenemos la validación propia del modelo implementando una validación cruzada de 10 particiones con 10 cv internas:
+
+```{r}
+# Reodenamos las filas del conjunto de datos, actualizamos el orden y divimos el conjunto en 10 trozos:
+rows = sample(nrow(InG))
+InG = InG[rows, ]
+folds = cut(seq(1,nrow(InG)),breaks=10,labels=FALSE)
+
+# Declaramos todas las variables que vamos a utilizar en el proceso:
+# Variables de almacenamiento de subconjuntos:
+set_train=list()
+set_test=list()
+X.train_saved=list()
+Y.train_saved=list()
+X.test_saved=list()
+Y.test_saved=list() 
+# variables de almacenamiento de modelos ajustados:
+cvfit=list()
+# Variables de almacenamiento de metabolitos y coeficientes:
+variables_values=list()
+
+# Comenzamos con las iteraciones. El bucle se ejecuta 10 veces donde cada iteración se le asigna un subgrupo como test y los 9 restantes se usan como subconjunto de entrenamiento:
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration TRAINING-testing ", i, '\n')
+  cat("##################################", '\n \n')
+  # Creación de los subconjuntos:
+  sample = which(folds==i,arr.ind=TRUE)
+  set_train[[i]] = InG[-sample, ] 
+  set_test[[i]]  = InG[sample, ]
+  # Separación de predictores y respuesta para el correcto funcionamiento del modelo:
+  a=as.data.frame(set_train[[i]])
+  train=a[1:542]
+  X.train = train
+  X.train = as.matrix(X.train)
+  Y.train = a$ig
+  
+  a=as.data.frame(set_test[[i]])
+  test=a[1:542]
+  X.test = test
+  X.test = as.matrix(X.test)
+  Y.test = a$ig
+  
+  X.train_saved[[i]]=X.train
+  Y.train_saved[[i]]=Y.train
+  X.test_saved[[i]]=X.test
+  Y.test_saved[[i]]=Y.test    
+  # Realizamos el modelo de validación cruzada 10 x 10 con el valor alfa entrenado previamente:
+  cvfit[[i]] = cv.glmnet(X.train, as.numeric(Y.train), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit[[i]])
+  # Extraemos los coeficientes y las variables seleccionadas:
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+}
+```
+
+#### Pearson para el training-testing
+
+```{r}
+corr_test_pearson=list()
+corr_test_spearman=list()
+correlaciones_tt=matrix(NA,10,4)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+si_model = 0 
+
+for (i in 1:10)
+{
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+  
+  if (dim(variables_values[[i]])[1] == 0)
+  {
+    cat("No metabolites found for iteration", i, '\n')
+  }
+  
+  if (dim(variables_values[[i]])[1] != 0)
+  {
+    corr_test_pearson[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="pearson")
+    corr_test_spearman[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="spearman")
+    
+    correlaciones_tt[i,1]=round(corr_test_pearson[[i]]$estimate,2)
+    correlaciones_tt[i,2]=round(corr_test_pearson[[i]]$conf.int[1],2)
+    correlaciones_tt[i,3]=round(corr_test_pearson[[i]]$conf.int[2],2)
+    correlaciones_tt[i,4]=round(corr_test_pearson[[i]]$p.value,3)
+    
+    si_model = cbind(si_model, i)
+  }
+}
+
+ci.mean(correlaciones_tt[,1],normal=T) #0.25 (0.21, 0.29)
+
+#export(correlaciones_tt, "1. Analisis estadistico/3. Resultados/1. datos/InG/20250311_correlaciones_tt_InG.xlsx")
+```
+
+#### Pearson del modelo
+
+```{r}
+correlacion_all = c()
+
+X2 = data.frame(BBDDmet[,2:543])
+colnames(X2) = tolower(colnames(X2))
+Y2 = BBDDmet$ig
+b = mean_values_metabo
+b$Metabolites = tolower(b$Metabolites)
+
+if (length(b) != 0) {
+  stdout  = vector('character')
+  con = textConnection('stdout', 'wr', local = TRUE)
+  sink(con)
+  for (i in 1:(dim(b)[1]))
+  {
+    if (i == 1) {cat("X2$model=", sep="")}
+    if ((i < (dim(b)[1])) & (i > 0)) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")"," +", "\n", sep="")}
+    if (i == (dim(b)[1])) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")", sep="")}
+  }
+  sink()
+  
+  close(con)
+  
+  stdout_full = paste(unlist(stdout), collapse =" ")
+  stdout_full[1]
+  
+  eval(parse(text=stdout_full[1]))
+  
+  modelo = X2$model
+  
+  correlacion_all = cor.test(Y2,modelo, conf.level = .95) #0.36 (0.32, 0.40)
+} 
+
+score_InG= data.frame(cbind(id = BBDDmet$id, IG = BBDDmet$ig, IG_est = modelo))
+
+export(score_InG, "1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_IG.xlsx")
+
+save.image(file = "1. Analisis estadistico/4. Workspace/20250311_InG.RData")
+
+rm(a, abc_full, abc_set, abc_set_values, b, bT, corr_test_pearson, 
+   corr_test_spearman, correlacion_all, correlaciones_tt, cv, cvfit,
+   cvfit_full, InG, fit, fit_full, full_data, inter, list_metabo, list_metabo_full,
+   mean_values_metabo, mean_values_metabo_sorted, mean_values_metabo_matrix, met, metabos_NA_model, model.met,
+   new_mean_values_metabo, new_mean_values_metabo_sorted, plot_negative, plot_positive, 
+   selected_mean_values_metabo_sorted_negative, selected_mean_values_metabo_sorted_positive, set_test, set_train,
+   si_model, test, test.data, train, train.data, variables_model, 
+   variables_model_full, variables_values, variables_values_full, variables2, X.full, X.test, X.test_saved, X.train,
+   X.train_saved, X2, Y.test_saved, Y.train_saved, alp, con, folds, i, indx, l, listado_selected, listado_selected_full,
+   maximo, minimo, modelo, rows, sample, stdout, stdout_full, training, type.lambda, values_metabo,
+   values_metabo_full, variables_get, variables_get_full, Y.full, Y.test, Y.train, Y2, score_InG)
+```
+
+## 4.3. cargluce:
+
+### 4.3.1. Entrenamiento de los modelos:
+
+```{r}
+cargluce = cbind(BBDDmet[2:543],BBDDmet[546])
+```
+
+#### Estimacion del valor de alpha:
+
+```{r}
+# Plantamos la semilla:
+set.seed(12)
+
+# Creamos la aleatorización de las filas:
+rows = sample(nrow(cargluce))
+# Ordenamos las filas para la aleatorización:
+cargluce = cargluce [rows,]
+# Creamos los cortes de la validación cruzada (leave-one-out):
+folds = cut(seq(1,nrow(cargluce)),breaks=100,labels=FALSE)
+
+# Creamos las variables de aculumación:
+train.data = c()
+test.data = c()
+cv = c()
+bT = c()
+
+# Iniciamos el bucle de entrenamiento de hiperparámetros: nested cross-validation:
+for (i in 1:100) {
+  # Seleccionamos el corte de la BBDD que coincide con i:
+  traincargluce = which(folds==i, arr.ind=TRUE)
+  # Creamos un subconjunto para la iteración i que selecciona todas las filas no incluidas en traincargluce:
+  train.data[[i]] = cargluce [-traincargluce, ]
+  # Validamos con las filas incluidas en traincargluce:
+  test.data[[i]] = cargluce [traincargluce, ] 
+  # Hacemos la ENR binomial utilizando el subconjunto de entrenamiento. Hacemos validación cruzada interna con 5 particiones y probamos automaticamente 5 combinaciones de los hiperparámetros de optimización del modelo:
+  cv[[i]] = train(cargluce ~ . , data = train.data[[i]],  method = "glmnet", trControl = trainControl("cv", number = 5), tuneLength = 5)
+  # Extraemos los resultados de la mejor combinación de hiperparámetros para la iteración i incluyendo la precisión de cada combinación
+  bT[[i]] = cbind(cv[[i]]$bestTune, RMSE=min(cv[[i]]$results$RMSE))
+}
+```
+
+Selección del mejor Alpha y lambda. En la tabla que obtenemos, seleccionamos la combinación con mayor precisión de los modelos entrenados:
+
+```{r}
+bT = data.frame(matrix(unlist(bT), ncol = 3, byrow= T))
+names(bT) = c("alpha","lambda","accuracy")
+bT = bT %>% arrange(desc(accuracy))
+l = bT$lambda[bT$accuracy== max(bT$accuracy)] #3.395443
+#l = 3.395443
+alp = bT$alpha[bT$accuracy== max(bT$accuracy)] #0.325
+#alp = 0.325
+```
+
+#### Selección de los metabolitos
+
+```{r}
+set.seed(32)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+fit_full=list()
+cvfit_full=list()
+variables_values_full=list()
+
+full_data=as.data.frame(cargluce)
+X.full=full_data[1:542]
+X.full=as.matrix(X.full)
+Y.full = full_data$cargluce
+
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration WHOLE DATASET ", i, '\n')
+  cat("##################################", '\n')
+  
+  fit_full[[i]] = glmnet(X.full, as.numeric(Y.full), lambda = l, family="gaussian", alpha=alp)
+  plot(fit_full[[i]])
+  
+  cvfit_full[[i]] = cv.glmnet(X.full, as.numeric(Y.full), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit_full[[i]])
+  
+  list_metabo_full=coef(cvfit_full[[i]], s = type.lambda)
+  
+  values_metabo_full=list_metabo_full@x
+  values_metabo_full=values_metabo_full[-1]
+  
+  listado_selected_full=c(list_metabo_full@i)
+  variables_model_full=as.data.frame(colnames(X.full))
+  variables_get_full=variables_model_full[listado_selected_full,]
+  variables_get_full=as.character(variables_get_full)
+  
+  variables_values_full[[i]]=cbind(variables_get_full, values_metabo_full)
+}
+```
+
+#### Extracción de los metabolitos
+
+```{R}
+# Convertimos el conjunto de datos 'cargluce' en data.frame
+inter=as.data.frame(cargluce)
+# Extraemos los nombres de las variables predictoras
+variables2=as.data.frame(colnames(inter[,2:(length(inter))])) 
+
+# Renombramos las variables:
+colnames(variables2)=c("variables_get_full")
+# Añadimos una columna auxiliar con 'NA'
+variables2$check=c('NA')
+
+# Inicializamos un data.frame que contendrá las variables seleccionadas en las iteraciones
+abc_set = data.frame(colnames(cargluce))
+# Cambiamos el nombre de la columna creada:
+colnames(abc_set)[colnames(abc_set)=="colnames.cargluce."] = "variables_get_full"
+
+# Creamos un bucle para combinar los resultados de cada iteracion en abc_set:
+for (i in 1:10) {
+  abc_set= merge(abc_set, variables_values_full[[i]], by = "variables_get_full", all.x = T)
+}
+colnames(abc_set) = c("variables_get_full","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10")
+
+# Contamos las iteraciones donde una variable fue seleccionada:
+metabos_NA_model=as.data.frame(10 - rowSums(is.na(abc_set)))
+metabos_NA_model=cbind(abc_set$variables_get_full, metabos_NA_model)
+# Añadimos un indicador de selección en todas las iteraciones
+colnames(metabos_NA_model)=c("variables_get_full", "Join")
+# Ordenamos por nombre de variable
+metabos_NA_model=metabos_NA_model[order(metabos_NA_model$variables_get_full),]
+
+# Volvemos a fusionar para añadir la columna nueva:
+abc_set=merge(abc_set, metabos_NA_model, by = "variables_get_full", all=T)
+colnames(abc_set)=c("variables_get_full", "It1", "It2", "It3", "It4", "It5", "It6", "It7", "It8", "It9", "It10", "JOIN")
+
+# Calculamos la media y la desviación estándar de los coeficientes de cada variable (mean, sd) utilizando los valores de las 10 iteraciones
+abc_set_values=abc_set[,2:11]
+str(abc_set[,2:11], list.len=(ncol(abc_set))-3)
+indx = sapply(abc_set[,2:11], is.character)
+abc_set_values[indx] = lapply(abc_set_values[indx], function(x) as.numeric(as.character(x)))
+abc_full=cbind("Metabolites"=abc_set[,1], abc_set_values, "JOIN"=abc_set[,12])
+abc_full$mean=apply(abc_full[,2:11], 1, function(x) { mean(x, na.rm=TRUE) })
+abc_full$sd=apply(abc_full[,2:11], 1, function(x) { sd(x, na.rm=TRUE) })
+
+# Seleccionamos las variables elegidas 10 veces:
+mean_values_metabo = abc_full[ which(abc_full$JOIN==10), c(1,13,14)]
+
+# Y exportamos el resultado:
+export(mean_values_metabo, "1. Analisis estadistico/3. Resultados/1. datos/cargluce/Only coef_binomial_cargluce.xlsx")
+
+# Creamos una matriz...
+mean_values_metabo_matrix=as.matrix(mean_values_metabo)
+```
+
+#### Figuras
+
+```{r}
+# Combinamos las estadísticas calculadas con los nombres descriptivos de las variables, añadiendo contexto a los resultados
+mean_values_metabo$Metabolites = tolower(mean_values_metabo$Metabolites)
+match_names$Metabolites = tolower(match_names$Metabolites)
+new_mean_values_metabo=merge(mean_values_metabo, match_names, by = "Metabolites")
+
+# Ordenamos los resultados por su valor medio:
+mean_values_metabo_sorted=mean_values_metabo[order(mean_values_metabo$mean),c(1,2,3)]
+dim(mean_values_metabo_sorted)[1]
+
+# Añadimos los nombres correctos:
+new_mean_values_metabo_sorted=merge(mean_values_metabo_sorted, match_names, by = "Metabolites")
+# Y transformamos el subconjunto en data frame:
+new_mean_values_metabo_sorted=data.frame("Metabolites"=new_mean_values_metabo_sorted$name, 
+                                         "mean"=new_mean_values_metabo_sorted$mean, 
+                                         "sd"=new_mean_values_metabo_sorted$sd)
+new_mean_values_metabo_sorted=new_mean_values_metabo_sorted[order(new_mean_values_metabo_sorted$mean),c(1,2,3)]
+
+# Creamos dos subconjuntos para valores positivos y negativos:
+selected_mean_values_metabo_sorted_negative=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean<0), ]
+
+selected_mean_values_metabo_sorted_positive=new_mean_values_metabo_sorted[(new_mean_values_metabo_sorted$mean>=0), ]
+
+# Calculamos los valores extremos para indicarlo en la gráfica:
+minimo=min(selected_mean_values_metabo_sorted_negative$mean)
+maximo=max(selected_mean_values_metabo_sorted_positive$mean)
+
+# Creamos la gráfica para cada signo:
+plot_negative=ggplot(selected_mean_values_metabo_sorted_negative, aes(x = mean, y = reorder(Metabolites, -mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "left") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(-3.8, 0)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+plot_positive=ggplot(selected_mean_values_metabo_sorted_positive, aes(x = mean, y = reorder(Metabolites, +mean))) +
+  geom_point() + 
+  scale_y_discrete(position = "right") + 
+  xlab("Coefficient value") + 
+  ylab("Metabolites") +
+  scale_x_continuous(limits = c(0, 3.5)) + 
+  geom_errorbarh(aes(xmax = mean + sd, xmin = mean - sd, height = .2)) + 
+  theme_bw()
+
+# Combinamos los gráficos y exportamos la imagen:
+require(gridExtra)
+png(filename = "1. Analisis estadistico/3. Resultados/2. figuras/coef_cargluce.png", width = 30, height = 20, res=300, unit="cm")
+grid.arrange(plot_negative, plot_positive, ncol=2)
+dev.off()
+
+# Exportamos un excel con los metabolitos, sus medias y su SD ordenados:
+export(new_mean_values_metabo_sorted, "1. Analisis estadistico/3. Resultados/1. datos/cargluce/20250311_cargluce_coef.xlsx")
+```
+
+### 4.3.2. Validación interna
+
+#### Validación Training-testing
+
+Con esta parte del código obtenemos la validación propia del modelo implementando una validación cruzada de 10 particiones con 10 cv internas:
+
+```{r}
+# Reodenamos las filas del conjunto de datos, actualizamos el orden y divimos el conjunto en 10 trozos:
+rows = sample(nrow(cargluce))
+cargluce = cargluce[rows, ]
+folds = cut(seq(1,nrow(cargluce)),breaks=10,labels=FALSE)
+
+# Declaramos todas las variables que vamos a utilizar en el proceso:
+# Variables de almacenamiento de subconjuntos:
+set_train=list()
+set_test=list()
+X.train_saved=list()
+Y.train_saved=list()
+X.test_saved=list()
+Y.test_saved=list() 
+# variables de almacenamiento de modelos ajustados:
+cvfit=list()
+# Variables de almacenamiento de metabolitos y coeficientes:
+variables_values=list()
+
+# Comenzamos con las iteraciones. El bucle se ejecuta 10 veces donde cada iteración se le asigna un subgrupo como test y los 9 restantes se usan como subconjunto de entrenamiento:
+for (i in 1:10)
+{
+  cat("##################################", '\n')
+  cat("Iteration TRAINcargluce-testcargluce ", i, '\n')
+  cat("##################################", '\n \n')
+  # Creación de los subconjuntos:
+  sample = which(folds==i,arr.ind=TRUE)
+  set_train[[i]] = cargluce[-sample, ] 
+  set_test[[i]]  = cargluce[sample, ]
+  # Separación de predictores y respuesta para el correcto funcionamiento del modelo:
+  a=as.data.frame(set_train[[i]])
+  train=a[1:542]
+  X.train = train
+  X.train = as.matrix(X.train)
+  Y.train = a$cargluce
+  
+  a=as.data.frame(set_test[[i]])
+  test=a[1:542]
+  X.test = test
+  X.test = as.matrix(X.test)
+  Y.test = a$cargluce
+  
+  X.train_saved[[i]]=X.train
+  Y.train_saved[[i]]=Y.train
+  X.test_saved[[i]]=X.test
+  Y.test_saved[[i]]=Y.test    
+  # Realizamos el modelo de validación cruzada 10 x 10 con el valor alfa entrenado previamente:
+  cvfit[[i]] = cv.glmnet(X.train, as.numeric(Y.train), family="gaussian", type.measure = "mse", nfolds = 10, alpha=alp)
+  plot(cvfit[[i]])
+  # Extraemos los coeficientes y las variables seleccionadas:
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+}
+```
+
+#### Pearson para el Training-testing
+
+```{r}
+corr_test_pearson=list()
+corr_test_spearman=list()
+correlaciones_tt=matrix(NA,10,4)
+
+type.lambda=c("lambda.min")
+#type.lambda=c("lambda.1se")
+
+si_model = 0 
+
+for (i in 1:10)
+{
+  list_metabo=coef(cvfit[[i]], s = type.lambda)
+  
+  values_metabo=list_metabo@x
+  values_metabo=values_metabo[-1]
+  
+  listado_selected=c(list_metabo@i)
+  variables_model=as.data.frame(colnames(X.train))
+  variables_get=variables_model[listado_selected,]
+  variables_get=as.character(variables_get)
+  
+  variables_values[[i]]=cbind(variables_get, values_metabo)
+  
+  if (dim(variables_values[[i]])[1] == 0)
+  {
+    cat("No metabolites found for iteration", i, '\n')
+  }
+  
+  if (dim(variables_values[[i]])[1] != 0)
+  {
+    corr_test_pearson[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="pearson")
+    corr_test_spearman[[i]]=cor.test(Y.test_saved[[i]], predict(cvfit[[i]],newx=X.test_saved[[i]], s=type.lambda), method="spearman")
+    
+    correlaciones_tt[i,1]=round(corr_test_pearson[[i]]$estimate,2)
+    correlaciones_tt[i,2]=round(corr_test_pearson[[i]]$conf.int[1],2)
+    correlaciones_tt[i,3]=round(corr_test_pearson[[i]]$conf.int[2],2)
+    correlaciones_tt[i,4]=round(corr_test_pearson[[i]]$p.value,3)
+    
+    si_model = cbind(si_model, i)
+  }
+}
+
+ci.mean(correlaciones_tt[,1],normal=T) #0.23 (0.20, 0.26)
+
+#export(correlaciones_tt, "1. Analisis estadistico/3. Resultados/1. datos/cargluce/20250311_correlaciones_tt_cargluce.xlsx")
+```
+
+#### Pearson del modelo
+
+```{r}
+correlacion_all = c()
+
+X2 = data.frame(BBDDmet[,2:543])
+colnames(X2) = tolower(colnames(X2))
+Y2 = BBDDmet$cargluce
+b = mean_values_metabo
+b$Metabolites = tolower(b$Metabolites)
+
+if (length(b) != 0) {
+  stdout  = vector('character')
+  con = textConnection('stdout', 'wr', local = TRUE)
+  sink(con)
+  for (i in 1:(dim(b)[1]))
+  {
+    if (i == 1) {cat("X2$model=", sep="")}
+    if ((i < (dim(b)[1])) & (i > 0)) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")"," +", "\n", sep="")}
+    if (i == (dim(b)[1])) {cat("(","X2$",b[[i,1]],"*", b[[i,2]],")", sep="")}
+  }
+  sink()
+  
+  close(con)
+  
+  stdout_full = paste(unlist(stdout), collapse =" ")
+  stdout_full[1]
+  
+  eval(parse(text=stdout_full[1]))
+  
+  modelo = X2$model
+  
+  correlacion_all = cor.test(Y2,modelo, conf.level = .95) #0.38 (0.34, 0.42)
+} 
+
+score_cargluce= data.frame(cbind(id = BBDDmet$id, cargluce = BBDDmet$cargluce, cargluce_est = modelo))
+
+export(score_cargluce, "1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_CG.xlsx")
+
+save.image(file = "1. Analisis estadistico/4. Workspace/20250311_cargluce.RData")
+
+rm(a, abc_full, abc_set, abc_set_values, b, bT, corr_test_pearson, 
+   corr_test_spearman, correlacion_all, correlaciones_tt, cv, cvfit,
+   cvfit_full, cargluce, fit, fit_full, full_data, inter, list_metabo, list_metabo_full,
+   mean_values_metabo, mean_values_metabo_sorted, mean_values_metabo_matrix, met, metabos_NA_model, model.met,
+   new_mean_values_metabo, new_mean_values_metabo_sorted, plot_negative, plot_positive, 
+   selected_mean_values_metabo_sorted_negative, selected_mean_values_metabo_sorted_positive, set_test, set_train,
+   si_model, test, test.data, train, train.data, variables_model, 
+   variables_model_full, variables_values, variables_values_full, variables2, X.full, X.test, X.test_saved, X.train,
+   X.train_saved, X2, Y.test_saved, Y.train_saved, alp, con, folds, i, indx, l, listado_selected, listado_selected_full,
+   maximo, minimo, modelo, rows, sample, stdout, stdout_full, traincargluce, type.lambda, values_metabo,
+   values_metabo_full, variables_get, variables_get_full, Y.full, Y.test, Y.train, Y2, score_cargluce)
+```
+
+## 4.4. Unión scores en un solo DF:
+
+```{r}
+Scores_CQI <- read_excel("1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_CQI.xlsx")
+Scores_IG <- read_excel("1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_IG.xlsx")
+Scores_CG <- read_excel("1. Analisis estadistico/1. Bases de datos/2. Procesadas/20250311_Scores_CG.xlsx")
+
+Scores = merge(Scores_CQI, Scores_IG, by = "id")
+Scores = merge(Scores, Scores_CG, by = "id")
+
+rm(Scores_CQI, Scores_IG, Scores_CG)
+```
+
+# 5. Validación externa en Predimed-Plus
+
+Apertura de la base de datos de metabolómica del Predimed-Plus y de los metabolitos:
+
+```{r}
+PPlus <- read_excel("/Volumes/Trabajo SSD/Trabajo/1. UNH/Estadística/1. BBDD/PPLUS/Met Plasma CC DT2/20241017_metabolomica_plasma_diabetes.xlsx")
+PPlus_all = read_dta("/Volumes/Trabajo SSD/Trabajo/1. UNH/Estadística/1. BBDD/PPLUS/PREDIMEDplus_2024_01_18.dta")
+Met_CQI = read_excel("1. Analisis estadistico/3. Resultados/1. datos/CQI/Only coef_CQI.xlsx") # 53
+Met_IG <- read_excel("1. Analisis estadistico/3. Resultados/1. datos/InG/Only coef_IG.xlsx") # 34
+Met_CG <- read_excel("1. Analisis estadistico/3. Resultados/1. datos/cargluce/Only coef_cargluce.xlsx") # 63
+```
+
+Preparo la BBDD principal:
+
+1º Calculo CQI 2º Genero un df con solo paciente, CQI, IG, CG
+
+```{r}
+#colnames(PPlus_all)
+# Ratio HC sólidos/HC totales:
+# 1. Ratio solid/total (solid+liquid) carbohydrates
+
+# 1.1 Generar variable 'todovino'
+PPlus_all$todovino <- PPlus_all$mostos_v00 + PPlus_all$v_rosado_v00 + 
+  PPlus_all$v_moscatel_v00 + PPlus_all$v_tintojov_v00 +
+  PPlus_all$v_tintoanej_v00 + PPlus_all$v_blanco_v00 + PPlus_all$cavas_v00
+
+# 1.2 Generar variable 'todowhisky'
+PPlus_all$todowhisky <- PPlus_all$licores_v00 + PPlus_all$whisky_v00
+
+# 1.3 Calcular Carbohidratos líquidos
+PPlus_all$hc_liq <- (1/100) * (PPlus_all$leche_ent_v00 * 5 +  
+                           PPlus_all$leche_semi_v00 * 5 +
+                           PPlus_all$leche_desn_v00 * 5 +
+                           PPlus_all$batidos_v00 * 10.9 +
+                           PPlus_all$gazpach_v00 * 3 +
+                           PPlus_all$todovino * 1.1 +
+                           PPlus_all$cervezas_v00 * 2.4 +
+                           PPlus_all$todowhisky * 0.4 +
+                           PPlus_all$refrescos_v00 * 10.5 +
+                           PPlus_all$refrescsin_v00 * 0.07 +
+                           PPlus_all$z_natural_v00 * 11.5 +
+                           PPlus_all$z_frutasnat_v00 * 12 +
+                           PPlus_all$z_botella_v00 * 11.5 +
+                           PPlus_all$cafedesc_v00 * (5/100) * 11 +
+                           PPlus_all$cafes_v00 * 0.8 +
+                           PPlus_all$te_v00 * 0)
+
+# Ratio HC sólido/total
+PPlus_all$ratio_hc <- (PPlus_all$hc_v00-PPlus_all$hc_liq)/PPlus_all$hc_v00
+
+# 2. Ratio HC integrales/HC totales:
+PPlus_all$hc_ref <- (1/100) * (
+  PPlus_all$panblanco_v00 * 58 +
+  PPlus_all$cerealdes_v00 * 85.3 +
+  PPlus_all$arrozblan_v00 * 86 +
+  PPlus_all$espagueti_v00 * 82 +
+  PPlus_all$pizzas_v00 * 24.8 +
+  PPlus_all$g_maria_v00 * 76 +
+  PPlus_all$g_choco_v00 * 67.4 +
+  PPlus_all$magdalena_v00 * 65.5 +
+  PPlus_all$donut_v00 * 47.99 +
+  PPlus_all$croissant_v00 * 50 +
+  PPlus_all$bizcocho_v00 * 77.2 +
+  PPlus_all$pastel_v00 * 49.2 +
+  PPlus_all$churro_v00 * 40)
+
+PPlus_all$hc_int <- (1/100) * (
+  PPlus_all$paninteg_v00 * 49 +
+  PPlus_all$muesli_v00 * 62.5 +
+  PPlus_all$g_integral_v00 * 68.5)
+
+PPlus_all$ratio_cer <- PPlus_all$hc_int/(PPlus_all$hc_ref + PPlus_all$hc_int)
+
+# 3. Calculo de quintiles:
+
+PPlus_all$ratio_hcQ <- as.numeric(cut2(PPlus_all$ratio_hc, g=5))
+PPlus_all$ratio_cerQ <- as.numeric(cut2(PPlus_all$ratio_cer, g=5))
+PPlus_all$fibraQ <- as.numeric(cut2(PPlus_all$fibra_v00, g=5))
+PPlus_all$igQ <- 6 - as.numeric(cut2(PPlus_all$ig_v00, g=5))
+
+PPlus_all$CQI = PPlus_all$ratio_hcQ + PPlus_all$ratio_cerQ + PPlus_all$fibraQ + PPlus_all$igQ
+```
+
+```{r}
+PPlus_all = PPlus_all[,c("paciente", "CQI", "ig_v00", "cargluce_v00")]
+```
+
+QC PPlus metabolitos:
+
+```{r}
+# Elimino los metabolitos de control, medicamentos y aditivos alimentarios 
+drop = c("Thymine.d4..iSTD.","Inosine.15N4..iSTD.","Phenylalanine.d8..iSTD.","Valine.d8..iSTD.", "PC.12.0.12.0..iSTD.", #QC
+         "Acetaminophen","Atenolol","Gabapentin","Metformin","Metronidazole","Valsartan","Verapamil","Warfarin",#Drugs
+         "Quinine","Sulfamethoxazole",#Drugs
+         "cyclohexylamine","X3..N.Acetyl.L.cystein.S.yl..acetaminophen", #food additives
+         "visit") #otros
+short_db = PPlus[,!(names(PPlus) %in% drop)]
+```
+
+```{r}
+# Porcentaje de NA por metabolito
+missing_by_metabolite = colMeans(is.na(short_db)) * 100
+
+# Porcentaje de NA por muestra
+missing_by_sample = rowMeans(is.na(short_db)) * 100
+```
+
+Se filtra por NAs superior al 20%:
+
+```{r}
+# Eliminar metabolitos con demasiados missing values:21/880
+max_na_percent = 20
+keep_metabolites = missing_by_metabolite < max_na_percent
+data_filtered = short_db[, keep_metabolites]
+
+# Eliminar muestras con demasiados missing values: 2/839
+max_na_sample = 20
+keep_samples = missing_by_sample < max_na_sample
+data_filtered = data_filtered[keep_samples, ]
+```
+
+Se imputan los datos:
+
+```{r}
+set.seed(123)
+df_imputed = missForest(as.matrix(data_filtered[2:859], verbose = T, pararellize = "forest"))
+df_fimputed = data.frame(df_imputed$ximp)
+df_fimputed = cbind(data_filtered[1], df_fimputed)
+```
+
+Normalización
+
+```{r}
+# Aplico el algoritmo a toda la base de datos:
+IMP = apply(df_fimputed[2:859], 2, RankNorm)
+
+# Añado la columna de ids:
+PPlus = data.frame(cbind(df_fimputed[1], IMP))
+```
+
+Los nombres tienen diferentes codificaciones. Procedo a normalizarlos:
+
+```{r}
+# PPlus
+names_plasma <- read_excel("/Volumes/Trabajo SSD/Trabajo/1. UNH/Estadística/1. BBDD/PPLUS/Met Plasma CC DT2/names_plasma.xlsx")
+PPlus_t = data.frame(t(PPlus))
+PPlus_t$metabolitos = rownames(PPlus_t)
+PPlus_t = merge(names_plasma, PPlus_t, by = "metabolitos")
+PPlus_t$metabolitos = NULL
+PPlus_t$HMDB = NULL
+
+PPlus_2 = data.frame(t(PPlus_t))
+colnames(PPlus_2) = PPlus_2[1,]
+PPlus_2 <- PPlus_2[-1, ] 
+
+PPlus_2$paciente = PPlus$paciente
+PPlus_2 <- PPlus_2[, c("paciente", setdiff(names(PPlus_2), "paciente"))]
+PPlus_2 <- PPlus_2 %>%
+  mutate(across(everything(), ~ as.numeric(.)))
+
+PPlus_3 = merge(PPlus_2, PPlus_all, by = "paciente")
+```
+
+Metabolitos que no están en todas la base de datos de PPLus. Elimino aquellos metabolitos que no tienen un similar en la base de datos. Trabajo sobre los archivos Only coef_XXX:
+
+```{r}
+# CQI
+Met_CQI$names = tolower(Met_CQI$names)
+PPlus_met = tolower(colnames(PPlus_3))
+Met_CQI_n = Met_CQI$names
+no_CQI = setdiff(Met_CQI_n, PPlus_met)
+Met_CQI2 = Met_CQI[,c("names","mean")]
+
+# IG
+Met_IG$names = tolower(Met_IG$names)
+PPlus_met = tolower(colnames(PPlus_3))
+Met_IG_n = Met_IG$names
+no_IG = setdiff(Met_IG_n, PPlus_met)
+Met_IG2 = Met_IG[,c("names","mean")]
+
+# CG
+Met_CG$names = tolower(Met_CG$names)
+PPlus_met = tolower(colnames(PPlus_3))
+Met_CG_n = Met_CG$names
+no_CG = setdiff(Met_CG_n, PPlus_met)
+Met_CG2 = Met_CG[,c("names","mean")]
+```
+
+##5.1. CQI:
+
+```{r}
+# Verifico si todos los metabolitos están en PPlus_3:
+Met_CQI2$names = tolower(Met_CQI2$names)
+colnames(PPlus_3) = tolower(colnames(PPlus_3))
+all(Met_CQI2$names %in% colnames(PPlus_3))
+
+# Extraigo las columnas necesarias:
+P_sub <- PPlus_3[, Met_CQI2$names]
+
+# Me aseguro el orden de Met_CQI2:
+P_sub <- P_sub[, Met_CQI2$names]
+
+# Creo predicciones:
+predicciones <- as.matrix(P_sub) %*% Met_CQI2$mean
+
+PPlus_3$pred_CQI = predicciones
+
+cor.test(predicciones, PPlus_3$cqi) #0.23 (0.16, 0.29)
+```
+
+##5.2. IG:
+
+```{r}
+# Verifico si todos los metabolitos están en PPlus_3:
+Met_IG2$names = tolower(Met_IG2$names)
+colnames(PPlus_3) = tolower(colnames(PPlus_3))
+all(Met_IG2$names %in% colnames(PPlus_3))
+
+# Extraigo las columnas necesarias:
+P_sub <- PPlus_3[, Met_IG2$names]
+
+# Me aseguro el orden de Met_IG2:
+P_sub <- P_sub[, Met_IG2$names]
+
+# Creo predicciones:
+predicciones <- as.matrix(P_sub) %*% Met_IG2$mean
+
+PPlus_3$pred_IG = predicciones
+
+cor.test(predicciones, PPlus_3$ig) #0.23 (0.17, 0.29)
+```
+
+##5.3. Carga Glucémica:
+
+```{r}
+# Verifico si todos los metabolitos están en PPlus_3:
+Met_CG2$names = tolower(Met_CG2$names)
+colnames(PPlus_3) = tolower(colnames(PPlus_3))
+all(Met_CG2$names %in% colnames(PPlus_3))
+
+# Extraigo las columnas necesarias:
+P_sub <- PPlus_3[, Met_CG2$names]
+
+# Me aseguro el orden de Met_CG2:
+P_sub <- P_sub[, Met_CG2$names]
+
+# Creo predicciones:
+predicciones <- as.matrix(P_sub) %*% Met_CG2$mean
+
+PPlus_3$pred_CG = predicciones
+
+cor.test(predicciones, PPlus_3$cargluce_v00) #0.24 (0.18, 0.31)
+```
+
+```{r}
+rm(b, data_filtered, df_fimputed, df_imputed, formu_model2, formu_model3, IMP, Met_CG,
+   Met_CG2, Met_CQI, Met_CQI2, Met_CQI3, Met_IG, Met_IG2, P_sub, PPlus, PPlus_2,
+   PPlus_all, predicciones, results_model2, results_model3, X2, con, correlacion_all, 
+   drop, i, keep_metabolites, keep_samples, max_na_percent, max_na_sample, Met_CG_n,
+   Met_CQI_n, Met_IG_n, missing_by_metabolite, missing_by_sample, modelo, no_CG,
+   no_CQI, no_IG, PPlus_met, stdout, stdout_full, Y2, short_db, PPlus_t)
+```
+
+# 6. Analisis con los scores:
+
+```{r}
+load("E:/Trabajo/1. UNH/Articulos/1. En Preparación/1. Articulos/2. Co-Autor/Predimed/Indira/CQI - Met - DT2_ECV_Mort/1. Analisis estadistico/1. Bases de datos/1. Originales/mortality19_predimed.Rdata")
+covariables <- read_excel("1. Analisis estadistico/1. Bases de datos/1. Originales/20250220_PREDIMED_covariables_basal.xlsx")
+```
+
+```{r}
+Scores_basal= merge(Scores, mortality19_predimed, by = "id")
+Scores_basal= merge(Scores_basal, covariables, by = "id")
+Scores_basal= merge(Scores_basal, FFQ, by = "id")
+```
+
+## 6.1. Analisis de Mortalidad:
+
+```{r}
+Scores_basal$follcox_19 = as.numeric(difftime(Scores_basal$date_censored19, Scores_basal$datinclu, units = "days"))/365.25
+Scores_basal$CQI_est_sd = Scores_basal$CQI_est/sd(Scores_basal$CQI_est, na.rm = T)
+Scores_basal$IG_est_sd = Scores_basal$IG_est/sd(Scores_basal$IG_est, na.rm = T)
+Scores_basal$cargluce_est_sd = Scores_basal$cargluce_est/sd(Scores_basal$cargluce_est, na.rm = T)
+```
+
+```{r}
+approaches = c("CQI_est",
+                "IG_est",
+                "cargluce_est",
+                "CQI_est_sd",
+                "IG_est_sd",
+                "cargluce_est_sd")
+
+reales = c("CQI.x",
+            "ig",
+            "cargluce.x")
+
+formu_model1 = list()
+fit_model1 = list()
+formu_model2 = list()
+fit_model2 = list()
+formu_model3 = list()
+fit_model3 = list()
+formu_model4 = list()
+fit_model4 = list()
+
+for (i in 1:6){
+  formu_model1[[i]] = as.formula(paste0("Surv(follcox_19, death19) ~ ", approaches[i], 
+                                         "+ cut2(edad0, g = 4) + strata(sexo) + ps1 + ps2 +
+                                         strata(as.factor(grup_int)) +
+                                         strata(as.factor(nodo))"))
+  fit_model1[[i]] = coxph(formu_model1[[i]], data = Scores_basal)
+  
+  formu_model2[[i]] = as.formula(paste0("Surv(follcox_19, death19) ~ ", approaches[i], 
+                                         "+ cut2(edad0, g = 4) + (sexo) + ps1 + ps2 +
+                                         strata(as.factor(grup_int)) +
+                                         strata(as.factor(nodo)) + cut2(imc1, g = 2) +
+                                         as.factor(FR_smoke) + 
+                                         escolar1 + getota_1 + as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + as.factor(trathta0)"))
+  fit_model2[[i]] = coxph(formu_model2[[i]], data = Scores_basal)
+  
+  formu_model3[[i]] = as.formula(paste0("Surv(follcox_19, death19) ~ ", approaches[i], 
+                                         "+ cut2(edad0, g = 4) + (sexo) +  as.factor(FR_smoke) +
+                                         ps1 + ps2 + 
+                                         strata(as.factor(grup_int)) +
+                                         strata(as.factor(nodo)) + cut2(imc1, g = 2) + energiat +
+                                         alcoholg +   
+                                         escolar1 + getota_1 + as.factor(hipercol0) +
+                                         as.factor(hta0) + as.factor(tra_col0) + 
+                                         as.factor(trathta0)"))
+  fit_model3[[i]] = coxph(formu_model3[[i]], data = Scores_basal)
+
+  formu_model4[[i]] = as.formula(paste0("Surv(follcox_19, death19) ~ ", approaches[i], 
+                                         "* cut2(edad0, g = 4) + (sexo) +  as.factor(FR_smoke) +
+                                         ps1 + ps2 + 
+                                         strata(as.factor(grup_int)) + energiat + alcoholg +
+                                         strata(as.factor(nodo)) + cut2(imc1, g = 2) +   
+                                         escolar1 + getota_1 + as.factor(hipercol0) +
+                                         as.factor(hta0) + as.factor(tra_col0) + 
+                                         as.factor(trathta0)"))
+  fit_model4[[i]] = coxph(formu_model4[[i]], data = Scores_basal)
+}
+
+results_model1 = matrix(NA, 6, 4)
+results_model2 = matrix(NA, 6, 4)
+results_model3 = matrix(NA, 6, 4)
+results_model4 = matrix(NA, 6, 4)
+
+rownames(results_model1) = c("CQI_est",
+                             "IG_est",
+                             "CG_est",
+                             "CQI_sd",
+                             "IG_sd",
+                             "CG_sd")
+
+rownames(results_model2)=rownames(results_model1)
+rownames(results_model3)=rownames(results_model1)
+rownames(results_model4)=rownames(results_model1)
+
+colnames(results_model1)=c("HR", "lower 95% CI", "upper 95% CI", "P_value")
+colnames(results_model2)=colnames(results_model1)
+colnames(results_model3)=colnames(results_model1)
+colnames(results_model4)=colnames(results_model1)
+
+for (i in 1:6){
+  get_data_sum = summary(fit_model1[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model1[i,1] = round(hr_data[1], 3)
+  results_model1[i,2] = round(hr_data[2], 3)
+  results_model1[i,3] = round(hr_data[3], 3)
+  results_model1[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model2[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model2[i,1] = round(hr_data[1], 3)
+  results_model2[i,2] = round(hr_data[2], 3)
+  results_model2[i,3] = round(hr_data[3], 3)
+  results_model2[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model3[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model3[i,1] = round(hr_data[1], 3)
+  results_model3[i,2] = round(hr_data[2], 3)
+  results_model3[i,3] = round(hr_data[3], 3)
+  results_model3[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model4[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model4[i,1] = round(hr_data[1], 3)
+  results_model4[i,2] = round(hr_data[2], 3)
+  results_model4[i,3] = round(hr_data[3], 3)
+  results_model4[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+}
+
+full_results = rbind(c("Model 1"),results_model1, 
+                      c("Model 2"),results_model2,
+                      c("Model 3"),results_model3,
+                      c("Model 4"),results_model4)
+
+modelos = data.frame(full_results)
+modelos$names = rownames(modelos)
+export(modelos, "1. Analisis estadistico/3. Resultados/3. modelos/20250314_modelos_mortalidad_basal.xlsx")
+
+rm(approaches, fit_model1, fit_model2, fit_model3, fit_model4, reales, formu_model1, formu_model2, formu_model3,
+   formu_model4, full_results, get_data_sum, hr_data, modelos, results_model1, results_model2, results_model3,
+   results_model4, i)
+```
+
+## 6.2. Analisis de CVD: Eventos igual que en 10.1093/eurheartj/ehaa260
+
+```{r}
+CVD_total <- read_excel("1. Analisis estadistico/1. Bases de datos/1. Originales/20250216_CVDprojectweighted.xlsx")
+CVD_scores = merge(CVD_total, Scores_basal, by = 'id')
+CVD_scores$CQI_est_sd = CVD_scores$CQI_est/sd(CVD_scores$CQI_est)
+CVD_scores$IG_est_sd = CVD_scores$IG_est/sd(CVD_scores$IG_est)
+CVD_scores$cargluce_est_sd = CVD_scores$cargluce_est/sd(CVD_scores$cargluce_est)
+```
+
+```{r}
+approaches = c("CQI_est",
+                "IG_est",
+                "cargluce_est",
+                "CQI_est_sd",
+                "IG_est_sd",
+                "cargluce_est_sd")
+
+reales = c("CQI.x",
+            "ig",
+            "cargluce.x")
+
+formu_model1 = list()
+fit_model1 = list()
+formu_model2 = list()
+fit_model2 = list()
+formu_model3 = list()
+fit_model3 = list()
+formu_model4 = list()
+fit_model4 = list()
+
+for (i in 1:6){
+  formu_model1[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "* cut2(age, g = 4) + sexo + ps1 + ps2 +
+                                         strata(as.factor(grup_int)) +
+                                         strata(as.factor(center))"))
+  fit_model1[[i]] = coxph(formu_model1[[i]], data = CVD_scores)
+  
+  formu_model2[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "* cut2(age, g = 4) + sexo + ps1 + ps2 +
+                                         strata(as.factor(grup_int)) + diabetes +
+                                         strata(as.factor(center)) + cut2(imc1, g = 2) +
+                                         as.factor(FR_smoke) + 
+                                         escolar1 + getota_1 + as.factor(hipercol0) +
+                                        as.factor(hta0) + as.factor(tra_col0) +
+                                        as.factor(trathta0)"))
+  fit_model2[[i]] = coxph(formu_model2[[i]], weights = w, data = CVD_scores)
+  
+  formu_model3[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "* cut2(age, g = 4) + sexo +  as.factor(FR_smoke) + 
+                                         ps1 + ps2 + 
+                                         strata(as.factor(grup_int)) +
+                                         strata(as.factor(center)) + cut2(imc1, g = 2) + 
+                                         energiat + alcoholg +   
+                                         escolar1 + getota_1 + as.factor(hipercol0) +
+                                         as.factor(hta0) + as.factor(tra_col0) + 
+                                         as.factor(trathta0)"))
+  fit_model3[[i]] = coxph(formu_model3[[i]], weights = w, data = CVD_scores)
+
+  formu_model4[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "+ cut2(age, g = 4) + sexo +  as.factor(FR_smoke) +
+                                         ps1 + ps2 + 
+                                         strata(as.factor(grup_int)) + energiat + alcoholg +
+                                         strata(as.factor(center)) + cut2(imc1, g = 2) +   
+                                         escolar1 + getota_1 + as.factor(hipercol0) +
+                                         as.factor(hta0) + as.factor(tra_col0) + 
+                                         as.factor(trathta0)"))
+  fit_model4[[i]] = coxph(formu_model4[[i]], weights = w, data = CVD_scores)
+}
+
+results_model1 = matrix(NA, 6, 4)
+results_model2 = matrix(NA, 6, 4)
+results_model3 = matrix(NA, 6, 4)
+results_model4 = matrix(NA, 6, 4)
+
+rownames(results_model1) = c("CQI_est",
+                             "IG_est",
+                             "CG_est",
+                             "CQI_sd",
+                             "IG_sd",
+                             "CG_sd")
+
+rownames(results_model2)=rownames(results_model1)
+rownames(results_model3)=rownames(results_model1)
+rownames(results_model4)=rownames(results_model1)
+
+colnames(results_model1)=c("HR", "lower 95% CI", "upper 95% CI", "P_value")
+colnames(results_model2)=colnames(results_model1)
+colnames(results_model3)=colnames(results_model1)
+colnames(results_model4)=colnames(results_model1)
+
+for (i in 1:6){
+  get_data_sum = summary(fit_model1[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model1[i,1] = round(hr_data[1], 3)
+  results_model1[i,2] = round(hr_data[2], 3)
+  results_model1[i,3] = round(hr_data[3], 3)
+  results_model1[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model2[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model2[i,1] = round(hr_data[1], 3)
+  results_model2[i,2] = round(hr_data[2], 3)
+  results_model2[i,3] = round(hr_data[3], 3)
+  results_model2[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model3[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model3[i,1] = round(hr_data[1], 3)
+  results_model3[i,2] = round(hr_data[2], 3)
+  results_model3[i,3] = round(hr_data[3], 3)
+  results_model3[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model4[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model4[i,1] = round(hr_data[1], 3)
+  results_model4[i,2] = round(hr_data[2], 3)
+  results_model4[i,3] = round(hr_data[3], 3)
+  results_model4[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+}
+
+full_results = rbind(c("Model 1"),results_model1, 
+                      c("Model 2"),results_model2,
+                      c("Model 3"),results_model3,
+                      c("Model 4"),results_model4)
+
+modelos = data.frame(full_results)
+modelos$names = rownames(modelos)
+export(modelos, "1. Analisis estadistico/3. Resultados/3. modelos/20250314_modelos_CVD_basal.xlsx")
+
+rm(approaches, fit_model1, fit_model2, fit_model3, fit_model4, reales, formu_model1, formu_model2, formu_model3,
+   formu_model4, full_results, get_data_sum, hr_data, modelos, results_model1, results_model2, results_model3,
+   results_model4, i)
+```
+
+```{r}
+anova(fit_model3[[6]], fit_model4[[6]], test = "LRT")
+```
+
+## 6.3. Analisis de T2D: Eventos igual que en 10.1093/eurheartj/ehaa260
+
+```{r}
+T2D_total <- read_csv("1. Analisis estadistico/1. Bases de datos/1. Originales/20250216_T2DOGTTprojectweighted.csv")
+T2D_scores = merge(T2D_total, Scores_basal, by = 'id')
+T2D_scores$CQI_est_sd = T2D_scores$CQI_est/sd(T2D_scores$CQI_est)
+T2D_scores$IG_est_sd = T2D_scores$IG_est/sd(T2D_scores$IG_est)
+T2D_scores$cargluce_est_sd = T2D_scores$cargluce_est/sd(T2D_scores$cargluce_est)
+```
+
+```{r}
+approaches = c("CQI_est",
+                "IG_est",
+                "cargluce_est",
+                "CQI_est_sd",
+                "IG_est_sd",
+                "cargluce_est_sd")
+
+reales = c("CQI.x",
+            "ig",
+            "cargluce.x")
+
+formu_model1 = list()
+fit_model1 = list()
+formu_model2 = list()
+fit_model2 = list()
+formu_model3 = list()
+fit_model3 = list()
+formu_model4 = list()
+fit_model4 = list()
+
+for (i in 1:6){
+  formu_model1[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "+ cut2(edad0.x, g = 4) + sexo.x + ps1.x + ps2.x +
+                                         strata(as.factor(grup_int.x)) + idcluster.x +
+                                         strata(as.factor(nodo.x))"))
+  fit_model1[[i]] = coxph(formu_model1[[i]], data = T2D_scores)
+  
+  formu_model2[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "+ cut2(edad0.x, g = 4) + sexo.x + ps1.x + ps2.x +
+                                         strata(as.factor(grup_int.x)) + 
+                                         strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                                         as.factor(FR_smoke) + idcluster.x + 
+                                         escolar1 + getota_1.x + as.factor(hipercol0.x) +
+                                        as.factor(hta0.x) + as.factor(tra_col0.x) +
+                                        as.factor(trathta0.x)"))
+  fit_model2[[i]] = coxph(formu_model2[[i]], weights = w, data = T2D_scores)
+  
+  formu_model3[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "+ cut2(edad0.x, g = 4) + sexo.x +  as.factor(FR_smoke) +
+                                         ps1.x + ps2.x + 
+                                         strata(as.factor(grup_int.x)) +
+                                         strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                                         energiat + alcoholg + idcluster.x + 
+                                         as.factor(escolar1) + getota_1.x + as.factor(hipercol0.x) +
+                                         as.factor(hta0.x) + as.factor(tra_col0.x) + 
+                                         as.factor(trathta0.x)"))
+  fit_model3[[i]] = coxph(formu_model3[[i]], weights = w, data = T2D_scores)
+
+  formu_model4[[i]] = as.formula(paste0("Surv(survtime, cens) ~ ", approaches[i], 
+                                         "* cut2(edad0.x, g = 4) + sexo.x +  as.factor(FR_smoke) +
+                                         ps1.x + ps2.x + 
+                                         strata(as.factor(grup_int.x)) + energiat + alcoholg +
+                                         strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +   
+                                         escolar1 + getota_1.x + as.factor(hipercol0.x) +
+                                         as.factor(hta0.x) + as.factor(tra_col0.x) + 
+                                         as.factor(trathta0.x)"))
+  fit_model4[[i]] = coxph(formu_model4[[i]], weights = w, data = T2D_scores)
+}
+
+results_model1 = matrix(NA, 6, 4)
+results_model2 = matrix(NA, 6, 4)
+results_model3 = matrix(NA, 6, 4)
+results_model4 = matrix(NA, 6, 4)
+
+rownames(results_model1) = c("CQI_est",
+                             "IG_est",
+                             "CG_est",
+                             "CQI_sd",
+                             "IG_sd",
+                             "CG_sd")
+
+rownames(results_model2)=rownames(results_model1)
+rownames(results_model3)=rownames(results_model1)
+rownames(results_model4)=rownames(results_model1)
+
+colnames(results_model1)=c("HR", "lower 95% CI", "upper 95% CI", "P_value")
+colnames(results_model2)=colnames(results_model1)
+colnames(results_model3)=colnames(results_model1)
+colnames(results_model4)=colnames(results_model1)
+
+for (i in 1:6){
+  get_data_sum = summary(fit_model1[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model1[i,1] = round(hr_data[1], 3)
+  results_model1[i,2] = round(hr_data[2], 3)
+  results_model1[i,3] = round(hr_data[3], 3)
+  results_model1[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model2[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model2[i,1] = round(hr_data[1], 3)
+  results_model2[i,2] = round(hr_data[2], 3)
+  results_model2[i,3] = round(hr_data[3], 3)
+  results_model2[i,4] = round(get_data_sum$coefficients[1,6], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model3[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model3[i,1] = round(hr_data[1], 3)
+  results_model3[i,2] = round(hr_data[2], 3)
+  results_model3[i,3] = round(hr_data[3], 3)
+  results_model3[i,4] = round(get_data_sum$coefficients[1,6], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model4[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model4[i,1] = round(hr_data[1], 3)
+  results_model4[i,2] = round(hr_data[2], 3)
+  results_model4[i,3] = round(hr_data[3], 3)
+  results_model4[i,4] = round(get_data_sum$coefficients[1,6], 3)  # Pvalue
+}
+
+full_results = rbind(c("Model 1"),results_model1, 
+                      c("Model 2"),results_model2,
+                      c("Model 3"),results_model3,
+                      c("Model 4"),results_model4)
+
+modelos = data.frame(full_results)
+modelos$names = rownames(modelos)
+export(modelos, "1. Analisis estadistico/3. Resultados/3. #modelos/20250314_modelos_T2D_basal.xlsx")
+
+rm(approaches, fit_model1, fit_model2, fit_model3, fit_model4, reales, formu_model1, #formu_model2, formu_model3,
+   formu_model4, full_results, get_data_sum, hr_data, modelos, results_model1, #results_model2, results_model3,
+   results_model4, i)
+```
+
+### 6.3.2. Analisis PREDIMED-Plus:
+
+```{r}
+PPlus_diab <- read_sav("1. Analisis estadistico/1. Bases de datos/1. Originales/ev_diab_2023-11-14.sav")
+```
+
+Fusiono la BBDD metabolitos con incidencia de diabetes:
+
+```{r}
+PPlus_diab2 = merge(PPlus_diab, PPlus_3, by = "paciente")
+```
+
+Comprobación de incidentes:
+
+```{r}
+table(PPlus_diab2$diabetes)
+```
+
+Preparación de la BBDD:
+
+```{r}
+PPlus_all = read_dta("/Volumes/Trabajo SSD/Trabajo/1. UNH/Estadística/1. BBDD/PPLUS/PREDIMEDplus_2024_01_18.dta")
+PPlus_all2 = PPlus_all[,c("paciente","sexo_s1", "edad_s1", "fuma_s1", "grupo_int_v00",
+                          "energiat_v00", "alcoholg_v00", "idcluster", "nodo", "imc_v00",
+                          "escola_v00", "geaf_tot_v00", "hta_s1", "colest_s1", "p17_total_v00")]
+PPlus_cox = merge(PPlus_all2, PPlus_diab2, by = "paciente")
+
+PPlus_cox$pred_CQI_sd = PPlus_cox$pred_CQI/sd(PPlus_cox$pred_CQI)
+PPlus_cox$pred_IG_sd = PPlus_cox$pred_IG/sd(PPlus_cox$pred_IG)
+PPlus_cox$pred_CG_sd = PPlus_cox$pred_CG/sd(PPlus_cox$pred_CG)
+```
+
+Calculo del tiempo de cox:
+
+```{r}
+PPlus_cox$follow_up = NA
+for (i in 1:nrow(PPlus_cox)) {
+  if (is.na(PPlus_cox$diabetes[i])) {
+    PPlus_cox$follow_up[i] <- as.numeric(PPlus_cox$f_ult_contact_calc[i] - PPlus_cox$fecha_rnd[i])
+  } else if (PPlus_cox$diabetes[i] == 1) {
+    PPlus_cox$follow_up[i] <- as.numeric(PPlus_cox$fecha_ev[i] - PPlus_cox$fecha_rnd[i])
+  }
+}
+summary(PPlus_cox$follow_up)
+```
+
+Añado un valor 0 a diabetes:
+
+```{r}
+PPlus_cox$diabetes[is.na(PPlus_cox$diabetes)] = 0
+table(PPlus_cox$diabetes)
+```
+
+Modelo de Cox:
+
+```{r}
+approaches = c("pred_CQI",
+                "pred_IG",
+                "pred_CG",
+                "pred_CQI_sd",
+                "pred_IG_sd",
+                "pred_CG_sd")
+
+reales = c("cqi",
+           "ig_v00",
+           "cargluce_v00",
+           "cqi",
+           "ig_v00",
+           "cargluce_v00")
+
+formu_model1 = list()
+fit_model1 = list()
+formu_model2 = list()
+fit_model2 = list()
+formu_model3 = list()
+fit_model3 = list()
+formu_model4 = list()
+fit_model4 = list()
+
+for (i in 1:6){
+  formu_model1[[i]] = as.formula(paste0("Surv(follow_up, diabetes) ~ ", approaches[i], 
+                                         "+ edad_s1 + sexo_s1 +
+                                         strata(as.factor(grupo_int_v00)) + idcluster +
+                                         strata(as.factor(nodo.x))"))
+  fit_model1[[i]] = coxph(formu_model1[[i]], data = PPlus_cox)
+  
+  formu_model2[[i]] = as.formula(paste0("Surv(follow_up, diabetes) ~ ", approaches[i], 
+                                         "+ edad_s1 + sexo_s1 +
+                                         strata(as.factor(grupo_int_v00)) + idcluster +
+                                         strata(as.factor(nodo.x)) + imc_v00 + 
+                                         fuma_s1 + escola_v00 + geaf_tot_v00 +
+                                         hta_s1 + colest_s1"))
+  fit_model2[[i]] = coxph(formu_model2[[i]], data = PPlus_cox)
+  
+  formu_model3[[i]] = as.formula(paste0("Surv(follow_up, diabetes) ~ ", approaches[i], 
+                                         "+ edad_s1 + sexo_s1 +
+                                         strata(as.factor(grupo_int_v00)) + idcluster +
+                                         strata(as.factor(nodo.x)) + imc_v00 + 
+                                         fuma_s1 + escola_v00 + geaf_tot_v00 +
+                                         hta_s1 + colest_s1 + energiat_v00 + 
+                                         alcoholg_v00 + as.factor(p17_total_v00)"))
+  fit_model3[[i]] = coxph(formu_model3[[i]], data = PPlus_cox)
+
+  formu_model4[[i]] = as.formula(paste0("Surv(follow_up, diabetes) ~ ", approaches[i], 
+                                         "+ edad_s1 + sexo_s1 +
+                                         strata(as.factor(grupo_int_v00)) + idcluster +
+                                         strata(as.factor(nodo.x)) + imc_v00 + 
+                                         fuma_s1 + escola_v00 + geaf_tot_v00 +
+                                         hta_s1 + colest_s1 + energiat_v00 + 
+                                         alcoholg_v00 + as.factor(p17_total_v00) + ", 
+                                         reales[i]))
+  fit_model4[[i]] = coxph(formu_model4[[i]], data = PPlus_cox)
+}
+
+results_model1 = matrix(NA, 6, 4)
+results_model2 = matrix(NA, 6, 4)
+results_model3 = matrix(NA, 6, 4)
+results_model4 = matrix(NA, 6, 4)
+
+rownames(results_model1) = c("pred_CQI",
+                             "pred_IG",
+                             "pred_CG",
+                             "pred_CQI_sd",
+                             "pred_IG_sd",
+                             "pred_CG_sd")
+
+rownames(results_model2)=rownames(results_model1)
+rownames(results_model3)=rownames(results_model1)
+rownames(results_model4)=rownames(results_model1)
+
+colnames(results_model1)=c("HR", "lower 95% CI", "upper 95% CI", "P_value")
+colnames(results_model2)=colnames(results_model1)
+colnames(results_model3)=colnames(results_model1)
+colnames(results_model4)=colnames(results_model1)
+
+for (i in 1:6){
+  get_data_sum = summary(fit_model1[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model1[i,1] = round(hr_data[1], 3)
+  results_model1[i,2] = round(hr_data[2], 3)
+  results_model1[i,3] = round(hr_data[3], 3)
+  results_model1[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model2[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model2[i,1] = round(hr_data[1], 3)
+  results_model2[i,2] = round(hr_data[2], 3)
+  results_model2[i,3] = round(hr_data[3], 3)
+  results_model2[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model3[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model3[i,1] = round(hr_data[1], 3)
+  results_model3[i,2] = round(hr_data[2], 3)
+  results_model3[i,3] = round(hr_data[3], 3)
+  results_model3[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+  
+  get_data_sum = summary(fit_model4[[i]])
+  hr_data = get_data_sum$conf.int[1,c("exp(coef)", "lower .95", "upper .95")]
+  
+  results_model4[i,1] = round(hr_data[1], 3)
+  results_model4[i,2] = round(hr_data[2], 3)
+  results_model4[i,3] = round(hr_data[3], 3)
+  results_model4[i,4] = round(get_data_sum$coefficients[1,5], 3)  # Pvalue
+}
+
+full_results = rbind(c("Model 1"),results_model1, 
+                      c("Model 2"),results_model2,
+                      c("Model 3"),results_model3,
+                      c("Model 4"),results_model4)
+
+modelos = data.frame(full_results)
+modelos$names = rownames(modelos)
+export(modelos, "1. Analisis estadistico/3. Resultados/3. modelos/20250420_modelos_T2D_PPlus.xlsx")
+
+rm(approaches, fit_model1, fit_model2, fit_model3, fit_model4, reales, formu_model1, 
+   formu_model2, formu_model3, formu_model4, full_results, get_data_sum, hr_data, modelos,
+   results_model1, results_model2, results_model3,
+   results_model4, i)
+```
+
+```{r}
+save.image(file = "1. Analisis estadistico/4. Workspace/20250420_PPlus.RData")
+```
+
+```{r}
+rm(PPlus_3, PPlus_all, PPlus_all2, PPlus_diab, PPlus_diab2, names_plasma, results_model1, 
+   results_model2, results_model3, results_model4, approaches, hr_data, i, reales, full_results,
+   fit_model1, fit_model2, fit_model3, fit_model4, formu_model1, formu_model2, formu_model3,
+   formu_model4, full_results, get_data_sum, modelos)
+```
+
+# 7. Longevidad:
+
+Creo la variable de ponderación w. Para ello, mantengo los pesos ponderados de cada caso y creo una variable de estudio que añadiré como covariable:
+
+```{r}
+# 1. Extraer los pesos únicos de cada estudio
+cvd_unique <- CVD_scores %>%
+  group_by(id) %>% 
+  slice_head(n = 1) %>%                            
+  ungroup() %>% 
+  select(id, w) %>% 
+  rename(w_cvd = w)
+
+t2d_unique <- T2D_scores %>%                     
+  group_by(id) %>% 
+  slice_head(n = 1) %>%                            
+  ungroup() %>% 
+  select(id, w) %>% 
+  rename(w_t2d = w)
+
+# 2. Añadir w y estudio a Scores_basal con prioridad CVD
+Scores_basal = Scores_basal %>% 
+  left_join(cvd_unique, by = "id") %>%             
+  left_join(t2d_unique, by = "id") %>%             
+  mutate(w = coalesce(w_cvd, w_t2d),
+         estudio = case_when(
+         !is.na(w_cvd) ~ "CVD",
+         is.na(w_cvd) & !is.na(w_t2d) ~ "T2D",
+         TRUE ~ "OGTT")) %>%
+  select(-w_cvd, -w_t2d)
+
+Scores_basal$w[is.na(Scores_basal$w)] = 5.1
+
+rm(t2d_unique, cvd_unique)
+```
+
+Creo la variable longevidad (\>= 85)
+
+```{r}
+Scores_basal$edad2 = Scores_basal$edad0 + Scores_basal$follcox_19
+summary(Scores_basal$edad2)
+summary(Scores_basal$edad0)
+Scores_basal$nuevo = 999
+
+for (i in 1:length(Scores_basal$edad2)) {
+  if (Scores_basal$edad2[i] < 85 & Scores_basal$death19[i] == 1) {Scores_basal$nuevo[i] = 1}
+  else if (Scores_basal$edad2[i] >= 85) {Scores_basal$nuevo[i] = 2}
+  else {Scores_basal$nuevo[i] = 0}
+}
+
+Scores_basal_long = subset(Scores_basal, nuevo > 0)
+table(Scores_basal_long$nuevo)
+table(Scores_basal_long$death19)
+```
+
+## 7.1. Regresiones logisticas condicionadas:
+
+```{r}
+m2.1 = clogit(nuevo ~ CQI_est + edad0 + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = Scores_basal_long, weights = w, method = "breslow")
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,6],3))
+```
+
+```{r}
+m2.1 = clogit(nuevo ~ IG_est * edad0 + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = Scores_basal_long, weights = w, method = "breslow")
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,6],3))
+```
+
+```{r}
+m2.1 = clogit(nuevo ~ cargluce_est * edad0 + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = Scores_basal_long, weights = w, method = "breslow")
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,6],3))
+```
+
+```{r}
+rm(m2.1)
+```
+
+# 8. Figuras:
+
+```{r}
+Met_CQI <- read_excel("1. Analisis estadistico/3. Resultados/1. datos/CQI/20250311_CQI_coef.xlsx")
+Met_IG <- read_excel("1. Analisis estadistico/3. Resultados/1. datos/InG/20250311_IG_coef.xlsx")
+Met_CG <- read_excel("1. Analisis estadistico/3. Resultados/1. datos/cargluce/20250311_cargluce_coef.xlsx")
+```
+
+## 8.1. Diagrama de Venn:
+
+```{r}
+set_CQI = (Met_CQI$Metabolites)
+set_IG = (Met_IG$Metabolites)
+set_CG = (Met_CG$Metabolites)
+
+venn.diagram(x = list(set_CQI, set_IG, set_CG),
+             filename = '1. Analisis estadistico/3. Resultados/2. figuras/venn_tot.png',
+             output = T, 
+             
+             # Output features
+             imagetype="png" , 
+             resolution = 300,
+             
+             # Circles
+             lwd = 7,
+             # Numbers
+             cex = 1.5,
+             fontface = "bold",
+             fontfamily = "sans",
+             
+             # Set names
+             cat.cex = 2,
+             category.names = c("CQI", "IG", "CG"),
+             cat.default.pos = "text",
+             cat.fontface = "bold",
+             cat.fontfamily = "sans",
+             cat.pos = 2)
+
+set_CQI = subset(Met_CQI$Metabolites, Met_CQI$mean >= 0)
+set_IG = subset(Met_IG$Metabolites, Met_IG$mean >= 0)
+set_CG = subset(Met_CG$Metabolites, Met_CG$mean >= 0)
+
+venn.diagram(x = list(set_CQI, set_IG, set_CG),
+             filename = '1. Analisis estadistico/3. Resultados/2. figuras/venn_pos.png',
+             output = T, 
+             
+             # Output features
+             imagetype="png" , 
+             resolution = 300,
+             
+             # Circles
+             lwd = 7,
+             # Numbers
+             cex = 1.5,
+             fontface = "bold",
+             fontfamily = "sans",
+             
+             # Set names
+             cat.cex = 2,
+             category.names = c("CQI", "IG", "CG"),
+             cat.default.pos = "text",
+             cat.fontface = "bold",
+             cat.fontfamily = "sans",
+             cat.pos = 2)
+
+set_CQI = subset(Met_CQI$Metabolites, Met_CQI$mean < 0)
+set_IG = subset(Met_IG$Metabolites, Met_IG$mean < 0)
+set_CG = subset(Met_CG$Metabolites, Met_CG$mean < 0)
+
+venn.diagram(x = list(set_CQI, set_IG, set_CG),
+             filename = '1. Analisis estadistico/3. Resultados/2. figuras/venn_neg.png',
+             output = T, 
+             
+             # Output features
+             imagetype="png" , 
+             resolution = 300,
+             
+             # Circles
+             lwd = 7,
+             # Numbers
+             cex = 1.5,
+             fontface = "bold",
+             fontfamily = "sans",
+             
+             # Set names
+             cat.cex = 2,
+             category.names = c("CQI", "IG", "CG"),
+             cat.default.pos = "text",
+             cat.fontface = "bold",
+             cat.fontfamily = "sans",
+             cat.pos = 2)
+```
+
+## 8.2. Correlaciones entre los metabolitos comunes:
+
+```{r}
+df = merge(Met_CQI, Met_IG, by = "Metabolites")
+df = merge(df, Met_CG, by = "Metabolites")
+df2 <- df$Metabolites
+
+# Corrijo el nombre del metabolito 1:
+df2[1] =  "hydroxyhippurate"
+
+met2 = BBDDmet[,(tolower(names(BBDDmet)) %in% tolower(df2))]
+met2 = cbind(met2, CQI_est = Scores_basal$CQI_est, IG_est = Scores_basal$IG_est,
+             CG_est = Scores_basal$cargluce_est, CQI = Scores_basal$CQI.x, 
+             IG = Scores_basal$IG, CG = Scores_basal$cargluce.x)
+
+mat = cor(met2, use = "complete.obs")
+mat1 = cor.mtest(met2, conf.level = 0.95)
+```
+
+```{r}
+png(filename = "1. Analisis estadistico/3. Resultados/2. figuras/Cor_Mets_fig.png", 
+    width = 30, height = 30, res=300, unit="cm")
+corrplot(mat, method = 'color', type = "upper", addCoef.col = "black", diag = F, col = COL2('RdBu', 10), p.mat = mat1$p, sig.level = 0.05)
+dev.off()
+```
+
+```{r}
+rm(df, mat, mat1, set_CQI, set_IG, set_CG)
+```
+
+# 9. MSEA:
+
+## 9.1. CQI:
+
+### 9.1.1. Regresiones lineales múltiples:
+
+Creo una lista con las agrupaciones de los metabolitos según su clase biológica (https://www.hmdb.ca/):
+
+```{r}
+#match_names <- match_names %>% rename("Chemical_Classification" = "Chemical Classification")
+metabolite_sets <- match_names %>%
+  mutate(Class = replace_na(Class, "Others")) %>% 
+  group_by(Class) %>%
+  summarise(Metabolites = list(tolower(Metabolites))) %>%
+  deframe()
+```
+
+Creo la base de datos de CQI incluyendo todos sus metabólitos más los scores y todas las variables necesarias para hacer las regresiones lineales:
+
+```{r}
+Met_CQI <- Met_CQI %>% rename("names" = "Metabolites")
+names_CQI = merge(Met_CQI[,c("names")], 
+                    match_names[,c("names", "Metabolites")], 
+                    all.x = TRUE)
+Met_CQI_msea = cbind(id = BBDDmet$id, BBDDmet[,(tolower(names(BBDDmet)) %in% 
+                                                  tolower(names_CQI$Metabolites))])
+Met_CQI_msea_p = merge(Met_CQI_msea, Scores_basal, by = "id") %>%
+  setNames(tolower(names(.)))
+```
+
+Codifico el bucle de las regresiones: 1. Creo un df para almacenar los resultados que quiero. 2. Empiezo un bucle que recorrer names_CQI (que contiene los nombres de los metabolitos) y el df con todas las variables de CQI. 2.1. Primero creo la fórmula para que cambie la variable independiente, pero mantenga las variables de ajuste 2.2. Hago la regresión lineal múltiple 2.3. Obtengo los resultados y los guardo en el df
+
+```{r}
+resultados_CQI <- data.frame(Variable = character(),  Coef = numeric(),  IC_low = numeric(),  
+                             IC_high = numeric(),  p_value = numeric(),  stringsAsFactors = FALSE)
+
+for (var in tolower(names_CQI$Metabolites)) {
+  f <- as.formula(paste("cqi_est ~", var, "+ edad0 + (sexo) + 
+                as.factor(tabaco0) + ps1 + ps2 + (as.factor(grup_int)) + 
+                energiat + alcoholg + (as.factor(nodo)) + (imc1) + idcluster +
+                escolar1 + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0)"))
+  modelo <- lm(f, data = Met_CQI_msea_p)
+  resumen <- summary(modelo)
+  conf_int <- confint(modelo)
+  
+  coef <- round(resumen$coefficients[2, 1],3)
+  pval <- round(resumen$coefficients[2, 4],3) 
+  ic_low <- round(conf_int[2, 1],2)     
+  ic_high <- round(conf_int[2, 2],2)
+  
+  resultados_CQI <- rbind(resultados_CQI, data.frame(
+    Variable = var,
+    Coef = coef,
+    IC_low = ic_low,
+    IC_high = ic_high,
+    p_value = pval
+  ))
+}
+
+resultados_CQI$padj = p.adjust(resultados_CQI$p_value, method = "BH")
+#export(resultados_CQI, "1. Analisis estadistico/3. Resultados/3. modelos/20250423_RLM_CQI.xlsx")
+```
+
+### 9.1.2. FGSEA:
+
+Comienzo el MSEA: 1. Creo el vector de estadísticas para fgsea 2. Ejecuto el fgsea. nperm = 10000, minsize = 5, maxsize = 50 3. Guardo los resultados en un df
+
+```{r}
+# Vector de estadísticas:
+betas <- resultados_CQI$Coef
+names(betas) <- resultados_CQI$Variable
+betas <- sort(betas, decreasing = TRUE)
+
+# FGSEA:
+set.seed(11)
+fgsea_resultados <- fgsea(pathways = metabolite_sets, stats = betas,  minSize = 1,
+                          maxSize = 50, nperm = 100000) %>% arrange(NES) 
+fgsea_resultados_CQI <- fgsea_resultados[order(fgsea_resultados$NES, decreasing = TRUE), ]
+export(fgsea_resultados_CQI, "20250422_fgsea_CQI_beta.xlsx")
+```
+
+## 9.2. IG:
+
+### 9.2.1. Regresiones lineales múltiples:
+
+Creo la base de datos de IG incluyendo todos sus metabólitos más los scores y todas las variables necesarias para hacer las regresiones lineales:
+
+```{r}
+Met_IG <- Met_IG %>% rename("names" = "Metabolites")
+names_IG = merge(Met_IG[,c("names")], 
+                    match_names[,c("names", "Metabolites")], 
+                    all.x = TRUE)
+Met_IG_msea = cbind(id = BBDDmet$id, BBDDmet[,(tolower(names(BBDDmet)) %in% 
+                                                  tolower(names_IG$Metabolites))])
+Met_IG_msea_p = merge(Met_IG_msea, Scores_basal, by = "id") %>%
+  setNames(tolower(names(.)))
+```
+
+Codifico el bucle de las regresiones: 1. Creo un df para almacenar los resultados que quiero. 2. Empiezo un bucle que recorrer names_CQI (que contiene los nombres de los metabolitos) y el df con todas las variables de CQI. 2.1. Primero creo la fórmula para que cambie la variable independiente, pero mantenga las variables de ajuste 2.2. Hago la regresión lineal múltiple 2.3. Obtengo los resultados y los guardo en el df
+
+```{r}
+resultados_IG <- data.frame(Variable = character(),  Coef = numeric(),  IC_low = numeric(),  
+                             IC_high = numeric(),  p_value = numeric(),  stringsAsFactors = FALSE)
+
+for (var in tolower(names_IG$Metabolites)) {
+  f <- as.formula(paste("cqi_est ~", var, "+ edad0 + (sexo) + 
+                as.factor(tabaco0) + ps1 + ps2 + (as.factor(grup_int)) + 
+                energiat + alcoholg + (as.factor(nodo)) + (imc1) + idcluster +
+                escolar1 + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0)"))
+  modelo <- lm(f, data = Met_IG_msea_p)
+  resumen <- summary(modelo)
+  conf_int <- confint(modelo)
+  
+  coef <- round(resumen$coefficients[2, 1],3)
+  pval <- round(resumen$coefficients[2, 4],3) 
+  ic_low <- round(conf_int[2, 1],2)     
+  ic_high <- round(conf_int[2, 2],2)
+  
+  resultados_IG <- rbind(resultados_IG, data.frame(
+    Variable = var,
+    Coef = coef,
+    IC_low = ic_low,
+    IC_high = ic_high,
+    p_value = pval
+  ))
+}
+
+resultados_IG$padj = p.adjust(resultados_IG$p_value, method = "BH")
+export(resultados_IG, "1. Analisis estadistico/3. Resultados/3. modelos/20250423_RLM_IG.xlsx")
+```
+
+### 9.2.2. FGSEA:
+
+Comienzo el MSEA: 1. Creo el vector de estadísticas para fgsea 2. Ejecuto el fgsea. nperm = 10000, minsize = 5, maxsize = 50 3. Guardo los resultados en un df
+
+```{r}
+# Vector de estadísticas:
+betas <- resultados_IG$Coef
+names(betas) <- resultados_IG$Variable
+betas <- sort(betas, decreasing = TRUE)
+
+# FGSEA:
+set.seed(12)
+fgsea_resultados <- fgsea(pathways = metabolite_sets, stats = betas,  minSize = 1,
+                          maxSize = 50, nperm = 100000) %>% arrange(NES) 
+fgsea_resultados_IG <- fgsea_resultados[order(fgsea_resultados$NES, decreasing = TRUE), ]
+export(fgsea_resultados_IG, "20250422_fgsea_IG_beta.xlsx")
+```
+
+## 9.3. CG:
+
+### 9.3.1. Regresiones lineales múltiples:
+
+Creo la base de datos de CG incluyendo todos sus metabólitos más los scores y todas las variables necesarias para hacer las regresiones lineales:
+
+```{r}
+Met_CG <- Met_CG %>% rename("names" = "Metabolites")
+names_CG = merge(Met_CG[,c("names")], 
+                    match_names[,c("names", "Metabolites")], 
+                    all.x = TRUE)
+Met_CG_msea = cbind(id = BBDDmet$id, BBDDmet[,(tolower(names(BBDDmet)) %in% 
+                                                  tolower(names_CG$Metabolites))])
+Met_CG_msea_p = merge(Met_CG_msea, Scores_basal, by = "id") %>%
+  setNames(tolower(names(.)))
+```
+
+Codifico el bucle de las regresiones: 1. Creo un df para almacenar los resultados que quiero. 2. Empiezo un bucle que recorrer names_CQI (que contiene los nombres de los metabolitos) y el df con todas las variables de CQI. 2.1. Primero creo la fórmula para que cambie la variable independiente, pero mantenga las variables de ajuste 2.2. Hago la regresión lineal múltiple 2.3. Obtengo los resultados y los guardo en el df
+
+```{r}
+resultados_CG <- data.frame(Variable = character(),  Coef = numeric(),  IC_low = numeric(),  
+                             IC_high = numeric(),  p_value = numeric(),  stringsAsFactors = FALSE)
+
+for (var in tolower(names_CG$Metabolites)) {
+  f <- as.formula(paste("cqi_est ~", var, "+ edad0 + (sexo) + 
+                as.factor(tabaco0) + ps1 + ps2 + (as.factor(grup_int)) + 
+                energiat + alcoholg + (as.factor(nodo)) + (imc1) + idcluster +
+                escolar1 + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0)"))
+  modelo <- lm(f, data = Met_CG_msea_p)
+  resumen <- summary(modelo)
+  conf_int <- confint(modelo)
+  
+  coef <- round(resumen$coefficients[2, 1],3)
+  pval <- round(resumen$coefficients[2, 4],3) 
+  ic_low <- round(conf_int[2, 1],2)     
+  ic_high <- round(conf_int[2, 2],2)
+  
+  resultados_CG <- rbind(resultados_CG, data.frame(
+    Variable = var,
+    Coef = coef,
+    IC_low = ic_low,
+    IC_high = ic_high,
+    p_value = pval
+  ))
+}
+
+resultados_CG$padj = p.adjust(resultados_CG$p_value, method = "BH")
+export(resultados_CG, "1. Analisis estadistico/3. Resultados/3. modelos/20250423_RLM_CG.xlsx")
+```
+
+### 9.3.2. FGSEA:
+
+Comienzo el MSEA: 1. Creo el vector de estadísticas para fgsea 2. Ejecuto el fgsea. nperm = 10000, minsize = 5, maxsize = 50 3. Guardo los resultados en un df
+
+```{r}
+# Vector de estadísticas:
+betas <- resultados_CG$Coef
+names(betas) <- resultados_CG$Variable
+betas <- sort(betas, decreasing = TRUE)
+
+# FGSEA:
+set.seed(13)
+fgsea_resultados <- fgsea(pathways = metabolite_sets, stats = betas,  minSize = 1,
+                          maxSize = 50, nperm = 100000) %>% arrange(NES) 
+fgsea_resultados_CG <- fgsea_resultados[order(fgsea_resultados$NES, decreasing = TRUE), ]
+export(fgsea_resultados_CG, "20250422_fgsea_CG_beta.xlsx")
+```
+
+## 9.4. Imagen:
+
+Para crear la imagen, se seguirán los siguientes paso: 1. Crear una variable en cada df con los resultados del FGSEA con el estudio al que pertenecen 2. Creo un nuevo df juntando los tres df anteriores y creo dos nuevas variables indicando las vías que son significativas. Estas variables servirán para indicar en qué sitios hay que marcar la significancia 3. Genero el gráfico de barras
+
+```{r}
+fgsea_resultados_CQI$study = "CQI" 
+fgsea_resultados_IG$study = "GI"  
+fgsea_resultados_CG$study = "GL"  
+
+ggplot2 = rbind(fgsea_resultados_CQI, fgsea_resultados_IG, fgsea_resultados_CG)
+ggplot2$sig = ifelse(ggplot2$pval <0.05 & ggplot2$NES >0, TRUE, FALSE)
+ggplot2$sig1 = ifelse(ggplot2$pval <0.05 & ggplot2$NES <0, TRUE, FALSE)
+
+png(filename = "1. Analisis estadistico/3. Resultados/2. figuras/MSEA.png", width = 15, height = 25, res=300, unit="cm")
+ggplot (ggplot2, aes(y = NES, x = pathway, fill = (study))) + # Añadir un rectángulo con annotate 
+  geom_bar(position = "dodge", stat = "identity", size = 1, 
+           color="black", width = 0.7) +        #tipo de figura y marco negro entorno a las barras
+  scale_fill_manual(values = c("CQI" = "#4E79A7", "GI" = "#F28E2B", "GL" = "#59A14F")) +
+  geom_vline(xintercept = seq_along(unique(ggplot2$pathway)) - 0.5, color="gray", size=0.5) +
+  coord_flip() +                                #cambio a horizontal
+  labs(x=" ", y="Normalized Enrichment Score",
+       title="Metabolite set enrichment analysis",
+       fill = NULL) + 
+  geom_hline(yintercept = 0) +
+  scale_y_continuous(breaks = seq(-2, 2, by = 0.5), labels = seq(-2, 2, by = 0.5)) +
+  geom_text(data=subset(ggplot2, sig == TRUE), 
+            aes(label="*"),                     # Asterisco a la altura de 2
+            position=position_dodge(width=0.9), 
+            hjust= -1, color="black", size=5) + # Ajusta la posición del asterisco a la derecha
+  geom_text(data=subset(ggplot2, sig1 == TRUE), 
+            aes(label="*"),                     # Asterisco a la altura de -2
+            position=position_dodge(width=0.9), 
+            hjust= 1.5, color="black", size=5) + 
+  theme(panel.background = element_blank(),     # Elimino el fondo del panel
+        plot.background = element_blank(),      # Elimino el fondo del gráfico
+        panel.grid.major = element_blank(),     # Elimino las líneas de la cuadrícula principal
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom",
+        plot.title = element_text(hjust = 0.5),
+        axis.text.y = element_text(face = "bold")) + 
+  annotate("rect", xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, color = "black", fill = NA, linewidth = 0.5)
+dev.off()
+```
+
+Elimino los archivos innecesarios:
+
+```{r}
+rm(ggplot2, conf_int, modelo, resultados_CG, resultados_IG, resultados_CQI, resumen, 
+   coef, df2, estimate_CQI, f, i, ic_high, ic_low, metabolites, pval, var, betas,
+   all_metabolites)
+```
+
+# 10. Características Basales:
+
+```{r}
+met3$death19 = ifelse(met3$death19 == 1, TRUE, FALSE)
+met3$sexo = ifelse(met3$sexo == 1, "Woman", "Man")
+met3$hta0 = ifelse(met3$hta0 == 1, "Yes", "No")
+met3$hipercol0 = ifelse(met3$hipercol0 == 1, "Yes", "No")
+met3$FR_smoke = ifelse(met3$FR_smoke == 1, "Yes", "No")
+met3$grup_int = factor(met3$grup_int,
+                     levels = c("1", "2", "3"),
+                     labels = c("MedDiet + VOO", "MedDiet + NUTS", "Control"))
+
+vars = c("death19","edad0", "sexo", "imc1", "FR_smoke", "hta0", "hipercol0","grup_int", "energiat", "alcoholg", "getota_1",
+         "hdl","ldl","col", "tg","glu", "CQI", "ig", "cargluce.x")
+
+table1 = CreateTableOne(vars = vars, strata = "death19", data = met3, test = TRUE)
+table1_df = print(table1, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+table1_df = data.frame(Variable = rownames(table1_df), table1_df, row.names = NULL)
+
+wb = createWorkbook()
+addWorksheet(wb, "TableOne")
+
+writeData(wb, "TableOne", table1_df)
+saveWorkbook(wb, file = "../3. Resultados/1. datos/tabla_caract_basals1.xlsx", overwrite = TRUE)
+
+rm(vars, wb, table1, table1_df)
+```
+
+# 11. Metabolitos comunes:
+
+```{r}
+met3 = merge(met2, Scores_basal, by = "id")
+```
+
+## 11.1. Analisis de mortalidad:
+
+```{r}
+# hydroxyhippurate
+summary(coxph(Surv(follcox_19, death19) ~ hydroxyhippurate + edad0 + (sexo) + 
+                as.factor(FR_smoke) + ps1 + ps2 + strata(as.factor(grup_int)) + 
+                energiat + alcoholg + strata(as.factor(nodo)) + (imc1) + idcluster +
+                escolar1 + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0),
+              weights=w, data = met3, ties = "breslow", robust = F))
+# Dimethylglycine
+summary(coxph(Surv(follcox_19, death19) ~ dimethylglycine + edad0 + (sexo) + 
+                as.factor(FR_smoke) + ps1 + ps2 + strata(as.factor(grup_int)) + idcluster +
+                energiat + alcoholg + strata(as.factor(nodo)) + cut2(imc1, g = 2) +
+                as.factor(escolar1) + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0),
+               weights=w, data = met3, ties = "breslow", robust = F))
+# Guanine
+summary(coxph(Surv(follcox_19, death19) ~ guanine + edad0 + (sexo) + 
+                as.factor(FR_smoke) + ps1 + ps2 + strata(as.factor(grup_int)) + idcluster +
+                energiat + alcoholg + strata(as.factor(nodo)) + cut2(imc1, g = 2) +
+                as.factor(escolar1) + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0),
+               weights=w, data = met3, ties = "breslow", robust = F))
+# Linoleoylethanolamide
+summary(coxph(Surv(follcox_19, death19) ~ linoleoylethanolamide * cut2(edad0, g = 2) + (sexo) + 
+                as.factor(FR_smoke) + ps1 + ps2 + strata(as.factor(grup_int)) + idcluster +
+                energiat + alcoholg + strata(as.factor(nodo)) + cut2(imc1, g = 2) +
+                as.factor(escolar1) + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0),
+               weights=w, data = met3, ties = "breslow", robust = F))
+# UDP
+summary(coxph(Surv(follcox_19, death19) ~ UDP + edad0 + (sexo) + 
+                as.factor(FR_smoke) + ps1 + ps2 + strata(as.factor(grup_int)) + idcluster +
+                energiat + alcoholg + strata(as.factor(nodo)) + cut2(imc1, g = 2) +
+                as.factor(escolar1) + getota_1 + as.factor(hipercol0) + as.factor(hta0) + 
+                as.factor(tra_col0) + as.factor(trathta0),
+               weights=w, data = met3, ties = "breslow", robust = F))
+```
+
+## 11.2. Analisis de CVD:
+
+```{r}
+met4 = merge(met2, CVD_scores, by = "id")
+```
+
+```{r}
+# hydroxyhippurate
+summary(coxph(Surv(survtime, cens) ~ hydroxyhippurate + age + sexo +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(center)) +
+                cut2(imc1, g = 2) + energiat + alcoholg + escolar1 + getota_1 + 
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) +
+                as.factor(trathta0) + p14_1 + idcluster,
+              weights=w, data = met4, ties = "breslow", robust = F))
+
+# Dimethylglycine
+summary(coxph(Surv(survtime, cens) ~ dimethylglycine + age + sexo +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(center)) +
+                cut2(imc1, g = 2) + energiat + alcoholg + escolar1 + getota_1 + 
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) +
+                as.factor(trathta0) + p14_1 + idcluster,
+               weights=w, data = met4, ties = "breslow", robust = F))
+# Guanine
+summary(coxph(Surv(survtime, cens) ~ guanine + age + sexo +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(center)) +
+                cut2(imc1, g = 2) + energiat + alcoholg + escolar1 + getota_1 + 
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) +
+                as.factor(trathta0) + p14_1 + idcluster,
+               weights=w, data = met4, ties = "breslow", robust = F))
+# Linoleoylethanolamide
+summary(coxph(Surv(survtime, cens) ~ linoleoylethanolamide + age + sexo +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(center)) +
+                cut2(imc1, g = 2) + energiat + alcoholg + escolar1 + getota_1 + 
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) +
+                as.factor(trathta0) + p14_1 + idcluster,
+               weights=w, data = met4, ties = "breslow", robust = F))
+# UDP
+summary(coxph(Surv(survtime, cens) ~ UDP + age + sexo +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + strata(as.factor(center)) +
+                cut2(imc1, g = 2) + energiat + alcoholg + escolar1 + getota_1 + 
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) +
+                as.factor(trathta0) + p14_1 + idcluster,
+               weights=w, data = met4, ties = "breslow", robust = F))
+```
+
+## 11.3. Analisis de T2D:
+
+```{r}
+met5 = merge(met2, T2D_scores, by = "id")
+```
+
+```{r}
+# hydroxyhippurate
+summary(coxph(Surv(survtime, cens) ~ hydroxyhippurate + edad0.x + sexo.x +
+                as.factor(FR_smoke) + ps1.x + ps2.x + strata(as.factor(grup_int.x)) +
+                strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                energiat + alcoholg + idcluster.x + as.factor(escolar1) + getota_1.x + 
+                as.factor(hipercol0.x) + as.factor(hta0.x) + as.factor(tra_col0.x) +
+                as.factor(trathta0.x),
+              weights=w, data = met5, ties = "breslow", robust = F))
+
+# Dimethylglycine
+summary(coxph(Surv(survtime, cens) ~ dimethylglycine + edad0.x + sexo.x +
+                as.factor(FR_smoke) + ps1.x + ps2.x + strata(as.factor(grup_int.x)) +
+                strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                energiat + alcoholg + idcluster.x + as.factor(escolar1) + getota_1.x + 
+                as.factor(hipercol0.x) + as.factor(hta0.x) + as.factor(tra_col0.x) +
+                as.factor(trathta0.x),
+               weights=w, data = met5, ties = "breslow", robust = F))
+# Guanine
+summary(coxph(Surv(survtime, cens) ~ guanine + edad0.x + sexo.x +
+                as.factor(FR_smoke) + ps1.x + ps2.x + strata(as.factor(grup_int.x)) +
+                strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                energiat + alcoholg + idcluster.x + as.factor(escolar1) + getota_1.x + 
+                as.factor(hipercol0.x) + as.factor(hta0.x) + as.factor(tra_col0.x) +
+                as.factor(trathta0.x),
+               weights=w, data = met5, ties = "breslow", robust = F))
+# Linoleoylethanolamide
+summary(coxph(Surv(survtime, cens) ~ linoleoylethanolamide + edad0.x + sexo.x +
+                as.factor(FR_smoke) + ps1.x + ps2.x + strata(as.factor(grup_int.x)) +
+                strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                energiat + alcoholg + idcluster.x + as.factor(escolar1) + getota_1.x + 
+                as.factor(hipercol0.x) + as.factor(hta0.x) + as.factor(tra_col0.x) +
+                as.factor(trathta0.x),
+               weights=w, data = met5, ties = "breslow", robust = F))
+# UDP
+summary(coxph(Surv(survtime, cens) ~ UDP + edad0.x + sexo.x +
+                as.factor(FR_smoke) + ps1.x + ps2.x + strata(as.factor(grup_int.x)) +
+                strata(as.factor(nodo.x)) + cut2(imc1.x, g = 2) +
+                energiat + alcoholg + idcluster.x + as.factor(escolar1) + getota_1.x + 
+                as.factor(hipercol0.x) + as.factor(hta0.x) + as.factor(tra_col0.x) +
+                as.factor(trathta0.x),
+               weights=w, data = met5, ties = "breslow", robust = F))
+```
+
+## 11.4. Analisis de longevidad:
+
+```{r}
+met6 = merge(met2, Scores_basal_long, by = "id")
+```
+
+```{r}
+m2.1 = clogit(nuevo ~ hydroxyhippurate * cut2(edad0, g = 3) + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + (nodo) + 
+                cut2(imc1, g = 4) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = met6, weights = w, method = "breslow", robust = F)
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,5],3))
+
+m2.1 = clogit(nuevo ~ dimethylglycine * cut2(edad0, g = 3) + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + ((nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = met6, weights = w, method = "breslow", robust = F)
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,5],3))
+
+m2.1 = clogit(nuevo ~ guanine * cut2(edad0, g = 3) + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + ((nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = met6, weights = w, method = "breslow", robust = F)
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,5],3))
+
+m2.1 = clogit(nuevo ~ linoleoylethanolamide * cut2(edad0, g = 3) + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + ((nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = met6, weights = w, method = "breslow", robust = F)
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,5],3))
+
+m2.1 = clogit(nuevo ~ UDP * cut2(edad0, g = 3) + strata(estudio) + (sexo) +  as.factor(FR_smoke) +
+                ps1 + ps2 + strata(as.factor(grup_int)) + ((nodo)) + 
+                cut2(imc1, g = 3) + energiat + alcoholg + escolar1 + getota_1 +
+                as.factor(hipercol0) + as.factor(hta0) + as.factor(tra_col0) + 
+                as.factor(trathta0) + idcluster,
+              data = met6, weights = w, method = "breslow", robust = F)
+cbind("OR" = round(exp(coef(m2.1))[1],2), round(t(exp(confint(m2.1))[1,]),2), round(summary(m2.1)$coefficients[1,5],3))
+```
+
+# 12. Analisis de Mediación:
+
+Realizo el análisis de mediación en los metabolitos significativos en las regresiones lineales. Posteriormente, realizo el analisis de mediación con regmedint y un bootstrap de 1000 repeticiones. Extraigo los efectos directos e indirectos, calculo su media y su intervalo de confianza y lo extraigo todo en una tabla. Los análisis los realizo sobre los modelos de Cox que previamente salieron significativos con los patrones.
+
+## 12.1. Selección de metabolitos:
+
+```{r}
+CQI_sig <- resultados_CQI$Variable[resultados_CQI$padj < 0.05]
+IG_sig <- resultados_IG$Variable[resultados_IG$padj < 0.05]
+CG_sig <- resultados_CG$Variable[resultados_CG$padj < 0.05]
+```
+
+## 12.1. Mortalidad:
+
+### 12.1.1. CQI:
+
+En el siguiente loop, primero recorro la lista de metabolitos significativos y después realizo el modelo de mediación con bootstrap. El número de repeticiones se indica en n_boot, los resultados se guardan en una lista en resultados_boot y planto semilla para tener resultados replicables. Dado que son muchos análisis, realizo bloques para evitar el colapso del ordenador:
+
+```{r}
+Met_CQI_msea_p$edad_q = as.numeric(cut2(Met_CQI_msea_p$edad0, g = 4))
+Met_CQI_msea_p$imc_q = as.numeric(cut2(Met_CQI_msea_p$imc1, g = 2))
+Met_CQI_msea_p$y_Surv = with(Met_CQI_msea_p, Surv(follcox_19, death19))
+
+# AÑADIR CODIGO DE BLOQUES. HACER BLOQUES DE 5 METABOLITOS:
+
+n_boot <- 1000
+resultados_boot <- c()
+set.seed(123)
+
+for (var in tolower(CQI_sig)) {
+  for (i in 1:n_boot) {
+    # Nombro cada ejecución para saber en qué metabolito y en repetición estoy:
+    cat("Variable:", var, "- Bootstrap", i, "de", n_boot, "\n")
+    # Creo la BD según el bootstrap que toca:
+    boot_sample <- Met_CQI_msea_p[sample(nrow(Met_CQI_msea_p), replace = TRUE), ]
+    # Comienzo la mediación:
+    resultado <- tryCatch({regmedint(data = boot_sample,
+                                     # Ojo, se tiene que crear y_Surv
+                                     yvar = "y_Surv", 
+                                     # variable explicativa
+                                     avar = "cqi_est",
+                                     # variable mediadora
+                                     mvar = var, 
+                                     # co-variables
+                                     cvar = c("edad_q", "sexo", "fr_smoke", "ps1", 
+                                              "ps2", "grup_int", "nodo", "imc_q", 
+                                              "energiat", "alcoholg", "escolar1",
+                                              "getota_1", "hipercol0", "hta0", 
+                                              "tra_col0", "trathta0"),
+                                     # tipo de modelo de mediación: linear/logistic
+                                     mreg = "linear",
+                                     # tipo de modelo principal: linear/logistic/
+                                     # loglinear/poisson/negbin/survCox/survAFT_exp/
+                                     # survAFT_weibull
+                                     yreg = "survCox",
+                                     # Valor de referencia de avar:
+                                     a0 = 0,
+                                     # Valor activo de avar:
+                                     a1 = 1,
+                                     # Valor fijo del mediador:
+                                     m_cde = mean(boot_sample[[var]], na.rm = T),
+                                     c_cond = c(1:16),
+                                     na_omit = T)
+    }, error = function(e) NULL)
+    nombre <- paste0(var, "_boot", i)
+    resultados_boot[[nombre]] <- resultado
+  }
+}
+validos <- Filter(Negate(is.null), resultados_boot)
+
+#summary(validos[[1]])$summary_myreg[,1] valores de mediación
+#summary(validos[[1]])$summary_myreg[,5] IC95% bajo
+#summary(validos[[1]])$summary_myreg[,6] IC95% alto
+
+# Extraer log-HR
+logHR_NDE <- sapply(validos, function(x) summary(validos[[x]])$summary_myreg[1,1])
+logHR_NIE <- sapply(validos, function(x) x$effect.pe.log$nie)
+logHR_TE  <- sapply(validos, function(x) x$effect.pe.log$te)
+
+# Convertir a HR
+HR_NDE <- exp(logHR_NDE)
+HR_NIE <- exp(logHR_NIE)
+HR_TE  <- exp(logHR_TE)
+
+# ICs percentiles 95%
+IC_HR <- function(x) quantile(x, probs = c(0.025, 0.975))
+
+IC_NDE <- IC_HR(HR_NDE)
+IC_NIE <- IC_HR(HR_NIE)
+IC_TE  <- IC_HR(HR_TE)
+
+# Proporción mediada
+prop_mediada <- log(HR_NIE) / log(HR_TE)
+IC_prop_mediada <- IC_HR(prop_mediada)
+
+```
+
+# 13. Suplementarios:

@@ -1,0 +1,906 @@
+---
+title: "TFM"
+format: 
+  pdf:
+    geometry: [margin=2.5cm]
+    documentclass: article
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Análisis preliminar para el TFM de Helena Banus.
+
+## Objetivo:
+
+En una submuestra de 280 personas del estudio PREDIMED-Plus con datos de isoformas de APOCIII, se busca determinar la asociación entre la concentración de APOCIII y sus isoformas con la incidencia de diabetes.
+
+### Objetivos secundarios:
+
+-   Asociar la concentración de APOCIII y sus isoformas con el perfil lipídico.
+-   Asociar la concentración de APOCIII y sus isoformas con la hemoglobina glicosilada, la insulina y la glucosa.
+-   Asociar la concentración de APOCIII y sus isoformas con la adherencia a la dieta mediterránea medida con el p17 y el perfil de ácidos grasos de los alimentos.
+
+# Bases de datos utilizadas:
+
+-   Para los datos generales del PREDIMED-Plus: PREDIMEDplus_2024_01_18.dta
+-   Para la incidencia de diabetes: ev_diab_2023-11-14.sav
+-   Para la insulina: PPLUS_PRIME_HOMA_1a_01092021.xlsx
+-   Para la concentración de APOCIII y las isoformas: Copia_Resultats_glicoformes_Tanda1_3.xlsx
+
+# Librerías utilizadas:
+
+```{r, include=FALSE}
+library(haven)
+library(readxl)
+library(dplyr)
+library(doParallel)
+library(missForest)
+library(ggplot2)
+library(vegan)
+library(purrr)
+library(patchwork)
+library(tidyr)
+library(robustbase)
+library(rio)
+library(MASS)
+library(Hmisc)
+library(tableone)
+library(openxlsx)
+```
+
+# QC e intergración de las bases de datos:
+
+## Apertura de la BBDD:
+
+```{r, message=FALSE, warning=FALSE}
+PPlus <- read_dta("BBDD/PREDIMEDplus_2024_01_18.dta")
+diab <- read_sav("BBDD/ev_diab_2023-11-14.sav")
+insulina <- read_excel("BBDD/PPLUS_PRIME_HOMA_1a_01092021.xlsx")
+isoformas <- read_excel("BBDD/Copia_Resultats_glicoformes_Tanda1_3.xlsx")
+```
+
+## Integración de las bases de datos:
+
+```{r}
+PPlus1 = PPlus[c("paciente", "idcluster", "grupo_int_v00", "nodo",
+                 "sexo_s1", "escola_v00", "geaf_tot_v00", "fuma_s1", "imc_v00",
+                 "glucosa_v00", "coltot_v00", "hdl_v00", "ldl_calc_v00",
+                 "trigli_v00", "hba1c_v00", "tto_col_v00",
+                 "hc_v00", "prot_v00", "gratot_v00", "mo_v00", "po_v00", "sa_v00",
+                 "alcoholg_v00", "energiat_v00", "porc_hc_v00", "porc_pr_v00",
+                 "porc_gr_v00", "porc_mo_v00", "porc_po_v00", "porc_sa_v00",
+                 "fibra_v00", "col_v00", "p17_total_v00", "edad_s1")]
+```
+
+```{r}
+insulina1 = insulina[c("paciente", "insulin_v00", "HOMA.IR")]
+```
+
+```{r, diab}
+diab1 = diab[c("paciente", "diabetes")]
+```
+
+```{r}
+colnames(isoformas) = c("IDURLA", "paciente", "Tanda", "ApoC3", "apoC30a_apoC31",
+                        "apoC30b_apoC31", "apoC31d_apoC31", "apoC32d_apoC31", 
+                        "apoC32_apoC31", "apoC30f_apoC31")
+```
+
+### Efecto Batch de isoformas:
+
+Compruebo efecto batch en las isoformas:
+
+```{r}
+pca_iso_pre = isoformas[3:10]
+```
+
+Para este análisis no me complico la vida e imputo a los participantes con NAs, pero habría que revisar variable por variable cuántos NAs y dependiendo del %, plantearse si usarla o no, y cómo usarla:
+
+```{r}
+registerDoParallel(cores=8)
+set.seed(1)
+
+IMP = missForest(as.matrix(pca_iso_pre), verbose = T, parallelize = "forest")
+IMP$OOBerror
+IMP = data.frame(IMP$ximp)
+```
+
+Genero z-scores y hago PCA:
+
+```{r}
+IMP[2:8] = scale(IMP[2:8], center = T, scale = T)
+res_pca <- prcomp(IMP[2:8], center = FALSE, scale. = FALSE)
+```
+
+```{r}
+scores <- data.frame(cbind(res_pca$x, Tanda = IMP$Tanda))
+
+var_exp <- res_pca$sdev^2 / sum(res_pca$sdev^2) * 100
+
+ggplot(scores, aes(PC1, PC2, color = as.factor(Tanda))) +
+  geom_point(alpha = 0.7, size = 2) +
+  stat_ellipse(aes(fill = as.factor(Tanda)), alpha = 0.2, geom = "polygon", show.legend = FALSE) +
+  labs(x = paste0("PC1 (", round(var_exp[1], 1), "%)"),
+       y = paste0("PC2 (", round(var_exp[2], 1), "%)"),
+       title = "PCA tras limpiar valores NA/Inf") +
+  theme_minimal()
+```
+
+No parece haber efecto batch visual (good job)
+
+```{r}
+dist_IMP = dist(IMP[2:8])
+adonis2(dist_IMP ~ Tanda, data = IMP, permutations = 999)
+
+dist_APOC3 = dist(IMP[2])
+adonis2(dist_APOC3 ~ Tanda, data = IMP, permutations = 999)
+```
+
+Confirmo que estadísticamente no hay efecto batch. Creo la base de datos de trabajo:
+
+```{r}
+isoformas1 = data.frame(c(isoformas[2], IMP))
+```
+
+```{r}
+BBDD = merge(PPlus1, isoformas1, by = "paciente")
+BBDD = merge(BBDD, insulina1, by = "paciente", all.x = T)
+BBDD = merge(BBDD, diab1, by = "paciente", all.x = T)
+```
+
+## QC:
+
+```{r}
+colnames(BBDD)
+BBDD$diabetes[is.na(BBDD$diabetes)] <- 0
+factores = c(3, 4, 5, 6, 8, 16, 35, 45)
+BBDD[, factores] = lapply(BBDD[, factores], factor)
+summary(BBDD)
+```
+
+```{r}
+vars_numéricas <- BBDD %>%
+  dplyr::select(where(is.numeric)) %>%
+  names()
+
+crear_histograma <- function(var) {
+  ggplot(BBDD, aes_string(x = var)) +
+    geom_histogram(bins = 30, color = "black", fill = "steelblue") +
+    labs(title = paste("Histograma de", var), x = var, y = "Frecuencia") +
+    theme_minimal()
+}
+
+lista_plots <- map(vars_numéricas, crear_histograma)
+
+walk(lista_plots, print)
+```
+
+Variables a revisar: geaf_tot_v00, imc_v00, hdl_v00, trigli_v00, hc_v00, alcoholg_v00, energiat_v00, porc_po_v00, fibra_v00, apoC3, "apoC30a_apoC31", "apoC30b_apoC31", "apoC31d_apoC31", "apoC32d_apoC31", apoC32_apoC31, apoC30f_apoC31, insulin_v00, HOMA.IR.
+
+# Análisis:
+
+Empiezo los modelos, las variables con distribución muy lejos de la normalidad, las transformo con log
+
+## Objetivo 1:
+
+Regresiones lineales: modelos ajustados por: idcluster, centro, sexo, educación, actividad física, tabaco, MEDAS, IMC y tratamiendo dislipidémico.
+
+### glucosa_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(glucosa_v00) ~ BBDD[[i]] + idcluster + edad_s1 +
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_glucosa.xlsx")
+```
+
+### insulin_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(insulin_v00) ~ BBDD[[i]] + idcluster + edad_s1 +
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_insulin.xlsx")
+```
+
+### HOMA.IR
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(HOMA.IR) ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_HOMA.IR.xlsx")
+```
+
+### hba1c_v00 (es más o menos normal, no log)
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(hba1c_v00 ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_hba1c_v00.xlsx")
+```
+
+### hba1c_v00 (versión log)
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(hba1c_v00) ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_hba1c_log.xlsx")
+```
+
+### coltot_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(coltot_v00 ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_coltot.xlsx")
+```
+
+### hdl_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(hdl_v00) ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_hdl.xlsx")
+```
+
+### ldl_calc_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(ldl_calc_v00 ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_ldl.xlsx")
+```
+
+### trigli_v00
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(log(trigli_v00) ~ BBDD[[i]] + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_TG.xlsx")
+```
+
+## Objetivo 2:
+
+Diferencias entre grupos:
+
+```{r}
+medias = c()
+SD = c()
+P_v_a = c()
+
+for (i in 36:42) {
+  medias[[i]] = round(tapply(BBDD[[i]], BBDD[[45]], mean, na.rm = T),3)
+  SD[[i]] = round(tapply(BBDD[[i]], BBDD[[45]], sd, na.rm = T),3)
+  modelo = wilcox.test(BBDD[[i]] ~ BBDD[[45]])
+  P_v_a[[i]]= round(modelo$p.value,3)
+}
+df_medias <- bind_rows(map(medias, ~ as.list(.x)))
+df_SD <- bind_rows(map(SD, ~ as.list(.x)))
+df_p_v_a <- map_dfr(P_v_a, ~ as_tibble(.x))
+df_medias = data.frame(cbind(df_medias, df_SD, df_p_v_a))
+df_medias <- cbind(variable = colnames(BBDD)[36:42], df_medias)
+colnames(df_medias) = c("variables","Media No diab", "Media Diab", 
+                        "SD No diab", "SD Diab", "P_valor")
+export(df_medias, "Resultados/wilcox_diabetes.xlsx")
+```
+
+Modelos de regresión logistica: idcluster, centro, sexo, educación, actividad física, tabaco, MEDAS, IMC y tratamiendo dislipidémico. Aquí también añado grupo intervención porque si que puede haber una influencia sobre la incidencia de diabetes.
+Ojo: añado edad como categórica dicotómica porque parace tener una relación con apoC30a_apoC31. Este modelo, sin edad, sale similar al resultado actual, con edad como continúa, su p es igual a 1 --> punto influyente pero sin interacción.
+
+```{r}
+c_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+  mod_glm <- glm(diabetes ~ BBDD[[i]] + idcluster + grupo_int_v00 + cut2(edad_s1, g = 2) +
+                   cut2(as.numeric(nodo), g = 3) + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + p17_total_v00 + tto_col_v00,
+                 family = binomial(link = "logit"), data = BBDD)
+  c_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+  SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+  p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(c_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_logisticas_diabetes.xlsx")
+```
+
+No hay suficientes participantes para utilizar nodos de forma normal y produce un sesgo. Para evitar la tendencia a infinito de algunos nodos, convierto la variable en numérica y hago terciles que se distribuirán en función a la cantidad de participantes por centro, reequilibrando la distribución.
+
+## Objetivo 3:
+
+### ANOVAS:
+
+Pruebo primero con terciles de adherencia de MedDiet:
+
+```{r}
+BBDD$ter_medas = cut2(BBDD$p17_total_v00, g = 3)
+medias = c()
+SD = c()
+P_v_a = c()
+
+for (i in 36:42) {
+  medias[[i]] = round(tapply(BBDD[[i]], BBDD[[46]], mean, na.rm = T),2)
+  SD[[i]] = round(tapply(BBDD[[i]], BBDD[[46]], sd, na.rm = T),2)
+  modelo = lm(BBDD[[i]] ~ BBDD[[46]])
+  P_v_a[[i]]= round(anova(modelo)[1,5],3)
+}
+df_medias <- bind_rows(map(medias, ~ as.list(.x)))
+df_SD <- bind_rows(map(SD, ~ as.list(.x)))
+df_p_v_a <- map_dfr(P_v_a, ~ as_tibble(.x))
+df_medias = data.frame(cbind(df_medias, df_SD, df_p_v_a))
+df_medias <- cbind(variable = colnames(BBDD)[36:42], df_medias)
+colnames(df_medias) = c("Variables" ,"Media Ter 1 (1,8)", "Media Ter 2 (8, 10)", "Media Ter 3 (10, 17)", 
+                        "SD Ter 1 (1,8)", "SD Ter 2 (8, 10)", "SD Ter 3 (10, 17)",
+                        "P_valor")
+export(df_medias, "Resultados/medias_ter_MEDAS_aov.xlsx")
+```
+
+Ancovas: ajustadas por: idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.
+
+```{r}
+medias = c()
+SD = c()
+P_v_a = c()
+
+for (i in 36:42) {
+  medias[[i]] = round(tapply(BBDD[[i]], BBDD[[46]], mean, na.rm = T),2)
+  SD[[i]] = round(tapply(BBDD[[i]], BBDD[[46]], sd, na.rm = T),2)
+  modelo = lm(BBDD[[i]] ~ ter_medas + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00,
+                    data = BBDD)
+  P_v_a[[i]]= round(anova(modelo)[1,5],3)
+}
+df_medias <- bind_rows(map(medias, ~ as.list(.x)))
+df_SD <- bind_rows(map(SD, ~ as.list(.x)))
+df_p_v_a <- map_dfr(P_v_a, ~ as_tibble(.x))
+df_medias = data.frame(cbind(df_medias, df_SD, df_p_v_a))
+df_medias <- cbind(variable = colnames(BBDD)[36:42], df_medias)
+colnames(df_medias) = c("Variables" ,"Media Ter 1 (1,8)", "Media Ter 2 (8, 10)", "Media Ter 3 (10, 17)", 
+                        "SD Ter 1 (1,8)", "SD Ter 2 (8, 10)", "SD Ter 3 (10, 17)",
+                        "P_valor")
+export(df_medias, "Resultados/medias_ter_MEDAS_aoc_ajust.xlsx")
+```
+
+### Regresiones lineales:
+
+#### Terciles de MEDAS:
+
+Regresión lineal asociaciones de terciles: modelos ajustados idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.
+
+```{r}
+r_glm1 = c()
+r_glm2 = c()
+SE1 = c()
+SE2 = c()
+p_valor1 = c()
+p_valor2 = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ ter_medas + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm1[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   r_glm2[[i]] = round(summary(mod_glm)$coef[3,1],3)
+   SE1[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   SE2[[i]] = round(summary(mod_glm)$coef[3,2],3)
+   p_valor1[[i]] = round(summary(mod_glm)$coef[2,4],3)
+   p_valor2[[i]] = round(summary(mod_glm)$coef[3,4],3)
+}
+
+df_coef1 <- map_dfr(r_glm1, ~ as_tibble(.x))
+df_coef2 <- map_dfr(r_glm2, ~ as_tibble(.x))
+df_SE1 <- map_dfr(SE1, ~ as_tibble(.x))
+df_SE2 <- map_dfr(SE2, ~ as_tibble(.x))
+df_p_valor1 <- map_dfr(p_valor1, ~ as_tibble(.x))
+df_p_valor2 <- map_dfr(p_valor2, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef1, df_SE1, df_p_valor1, df_coef2, df_SE2, 
+                           df_p_valor2))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variables" ,"Coef Ter 2 (1,8)", "SE Ter 2 (8,10)", "P_valor Ter2", 
+                      "Coef Ter 3 (8, 10)", "SE Ter 3 (10, 17)", "P_valor Ter3")
+export(df_rlog, "Resultados/regresiones_lineales_ter_Medas.xlsx")
+```
+
+Regresiones lineales para MEDAS y macronutrientes ajustadas por: idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.
+
+#### MEDAS:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ p17_total_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_MEDAS.xlsx")
+```
+
+#### HC:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_hc_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_pr_v00 + porc_gr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_HC_pct.xlsx")
+```
+
+#### Prot:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_pr_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_gr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_Prot_pct.xlsx")
+```
+
+#### Grasas totales:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_gr_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_Grasas_totales_pct.xlsx")
+```
+
+#### AGrasas Monoinsaturados:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_mo_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_AGM_pct.xlsx")
+```
+
+#### AGrasas Polinsaturados:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_po_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_AGP_pct.xlsx")
+```
+
+#### AGrasas Saturados:
+
+Porcentaje:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ porc_sa_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + 
+                   alcoholg_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_AGS_pct.xlsx")
+```
+
+#### Alcoholg:
+
+Gramos:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ alcoholg_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + energiat_v00 +
+                   porc_sa_v00 + fibra_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_alcohol_g.xlsx")
+```
+
+#### Fibra:
+
+Gramos:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ fibra_v00 + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + porc_hc_v00 + porc_pr_v00 + energiat_v00 +
+                   porc_sa_v00 + alcoholg_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_fibra_g.xlsx")
+```
+
+#### Energiat:
+
+Kcal: la energía tiene un poco de cola a la derecha, utilizo transformación logarítmica para una mejor comprensión de las unidades y neutralizar el efecto de la cola:
+
+```{r}
+r_glm = c()
+SE = c()
+p_valor = c()
+
+for (i in 36:42){
+   mod_glm <- lm(BBDD[[i]] ~ log(energiat_v00) + idcluster + edad_s1 + 
+                   nodo + sexo_s1 + escola_v00 + geaf_tot_v00 + fuma_s1 +
+                   imc_v00 + tto_col_v00 + fibra_v00 + alcoholg_v00,
+                    data = BBDD)
+   r_glm[[i]] = round(summary(mod_glm)$coef[2,1],3)
+   SE[[i]] = round(summary(mod_glm)$coef[2,2],3)
+   p_valor[[i]] = round(summary(mod_glm)$coef[2,4],3)
+}
+
+df_coef <- map_dfr(r_glm, ~ as_tibble(.x))
+df_SE <- map_dfr(SE, ~ as_tibble(.x))
+df_p_valor <- map_dfr(p_valor, ~ as_tibble(.x))
+df_rlog = data.frame(cbind(df_coef, df_SE, df_p_valor))
+df_rlog <- cbind(variable = colnames(BBDD)[36:42], df_rlog)
+colnames(df_rlog) = c("Variable", "Coeficiente", "Error_Estandar", "P_valor")
+export(df_rlog, "Resultados/regresiones_lineales_energia_kcal.xlsx")
+```
+
+# Características basales:
+
+```{r}
+vars = c("grupo_int_v00","edad_s1", "sexo_s1", "escola_v00", "geaf_tot_v00", "fuma_s1",
+         "imc_v00", "glucosa_v00", "insulin_v00", "HOMA.IR","hba1c_v00",
+         "coltot_v00", "hdl_v00", "ldl_calc_v00", "trigli_v00", "tto_col_v00", 
+         "hc_v00", "prot_v00", "gratot_v00", "mo_v00", "po_v00", "sa_v00", "alcoholg_v00", 
+         "energiat_v00", "porc_hc_v00", "porc_pr_v00", "porc_gr_v00", "porc_mo_v00", 
+         "porc_po_v00", "porc_sa_v00", "fibra_v00", "p17_total_v00", 
+         "ApoC3", "apoC30a_apoC31", "apoC30b_apoC31",
+         "apoC31d_apoC31", "apoC32d_apoC31", "apoC32_apoC31", "apoC30f_apoC31")
+vars_nn = c("geaf_tot_v00", "imc_v00", "hdl_v00", "trigli_v00", "hc_v00", "alcoholg_v00", 
+            "energiat_v00", "porc_po_v00", "fibra_v00", "apoC3", "apoC30a_apoC31", 
+            "apoC30b_apoC31", "apoC31d_apoC31", "apoC32d_apoC31", "apoC32_apoC31", 
+            "apoC30f_apoC31", "insulin_v00", "HOMA.IR")
+
+table1 = CreateTableOne(vars = vars, strata = "diabetes", data = BBDD)
+table1_df = print(table1, nonnormal = vars_nn, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+table1_df = data.frame(Variable = rownames(table1_df), table1_df, row.names = NULL)
+
+wb = createWorkbook()
+addWorksheet(wb, "TableOne")
+
+writeData(wb, "TableOne", table1_df)
+saveWorkbook(wb, file = "Resultados/tabla_caract_basals1.xlsx", overwrite = TRUE)
+
+table2 = CreateTableOne(vars = vars, data = BBDD, test = FALSE)
+table2_df = print(table2, nonnormal = vars_nn, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+table2_df = data.frame(Variable = rownames(table2_df), table2_df, row.names = NULL)
+
+wb = createWorkbook()
+addWorksheet(wb, "TableTwo")
+
+writeData(wb, "TableTwo", table2_df)
+saveWorkbook(wb, file = "Resultados/tabla_caract_basals_all.xlsx", overwrite = TRUE)
+```
+
+
+# Conclusiones:
+
+Por objetivos, se puede llegar a las siguientes conclusiones generales:
+- Objetivo 1: Hay relación entre los ratios de varias isoformas con Colesterol total, HDL, LDL y TG, siendo más fuerte esas asociaciones con Colesterol total y TG. En cuanto al metabolismo de la glucosa, también salen algunas asociaciones interesantes.
+- Objetivo 2: Un ratio y casi otro parecen asociarse con la diabetes, pero no hay diferencias de medias.
+- Objetivo 3: La dieta mediterránea no parece relacionarse en exceso con las isoformas salvo un ratio y en diferencia de medias. En modelos continuos no parece hacer relación y, en cuanto a los macronutrientes, en general no parece haber asociaciones salvo alguna asociación puntual.
+
+Otras cuestiones a tener en cuenta: No he aplicado FDR porque probablemente nos quedemos en nada, al menos en los objetivos 2 y 3, por lo que recomiendo presentarlo como un estudio piloto. 

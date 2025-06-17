@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>TFM</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="TFM_files/libs/clipboard/clipboard.min.js"></script>
+<script src="TFM_files/libs/quarto-html/quarto.js"></script>
+<script src="TFM_files/libs/quarto-html/popper.min.js"></script>
+<script src="TFM_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="TFM_files/libs/quarto-html/anchor.min.js"></script>
+<link href="TFM_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="TFM_files/libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="TFM_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="TFM_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="TFM_files/libs/bootstrap/bootstrap-8a79a254b8e706d3c925cde0a310d4f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">TFM</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="análisis-preliminar-para-el-tfm-de-helena-banus." class="level1">
+<h1>Análisis preliminar para el TFM de Helena Banus.</h1>
+<section id="objetivo" class="level2">
+<h2 class="anchored" data-anchor-id="objetivo">Objetivo:</h2>
+<p>En una submuestra de 280 personas del estudio PREDIMED-Plus con datos de isoformas de APOCIII, se busca determinar la asociación entre la concentración de APOCIII y sus isoformas con la incidencia de diabetes.</p>
+<section id="objetivos-secundarios" class="level3">
+<h3 class="anchored" data-anchor-id="objetivos-secundarios">Objetivos secundarios:</h3>
+<ul>
+<li>Asociar la concentración de APOCIII y sus isoformas con el perfil lipídico.</li>
+<li>Asociar la concentración de APOCIII y sus isoformas con la hemoglobina glicosilada, la insulina y la glucosa.</li>
+<li>Asociar la concentración de APOCIII y sus isoformas con la adherencia a la dieta mediterránea medida con el p17 y el perfil de ácidos grasos de los alimentos.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="bases-de-datos-utilizadas" class="level1">
+<h1>Bases de datos utilizadas:</h1>
+<ul>
+<li>Para los datos generales del PREDIMED-Plus: PREDIMEDplus_2024_01_18.dta</li>
+<li>Para la incidencia de diabetes: ev_diab_2023-11-14.sav</li>
+<li>Para la insulina: PPLUS_PRIME_HOMA_1a_01092021.xlsx</li>
+<li>Para la concentración de APOCIII y las isoformas: Copia_Resultats_glicoformes_Tanda1_3.xlsx</li>
+</ul>
+</section>
+<section id="librerías-utilizadas" class="level1">
+<h1>Librerías utilizadas:</h1>
+</section>
+<section id="qc-e-intergración-de-las-bases-de-datos" class="level1">
+<h1>QC e intergración de las bases de datos:</h1>
+<section id="apertura-de-la-bbdd" class="level2">
+<h2 class="anchored" data-anchor-id="apertura-de-la-bbdd">Apertura de la BBDD:</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>PPlus <span class="ot">&lt;-</span> <span class="fu">read_dta</span>(<span class="st">"BBDD/PREDIMEDplus_2024_01_18.dta"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>diab <span class="ot">&lt;-</span> <span class="fu">read_sav</span>(<span class="st">"BBDD/ev_diab_2023-11-14.sav"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>insulina <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"BBDD/PPLUS_PRIME_HOMA_1a_01092021.xlsx"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>isoformas <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"BBDD/Copia_Resultats_glicoformes_Tanda1_3.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="integración-de-las-bases-de-datos" class="level2">
+<h2 class="anchored" data-anchor-id="integración-de-las-bases-de-datos">Integración de las bases de datos:</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>PPlus1 <span class="ot">=</span> PPlus[<span class="fu">c</span>(<span class="st">"paciente"</span>, <span class="st">"idcluster"</span>, <span class="st">"grupo_int_v00"</span>, <span class="st">"nodo"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"sexo_s1"</span>, <span class="st">"escola_v00"</span>, <span class="st">"geaf_tot_v00"</span>, <span class="st">"fuma_s1"</span>, <span class="st">"imc_v00"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"glucosa_v00"</span>, <span class="st">"coltot_v00"</span>, <span class="st">"hdl_v00"</span>, <span class="st">"ldl_calc_v00"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"trigli_v00"</span>, <span class="st">"hba1c_v00"</span>, <span class="st">"tto_col_v00"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"hc_v00"</span>, <span class="st">"prot_v00"</span>, <span class="st">"gratot_v00"</span>, <span class="st">"mo_v00"</span>, <span class="st">"po_v00"</span>, <span class="st">"sa_v00"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"alcoholg_v00"</span>, <span class="st">"energiat_v00"</span>, <span class="st">"porc_hc_v00"</span>, <span class="st">"porc_pr_v00"</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"porc_gr_v00"</span>, <span class="st">"porc_mo_v00"</span>, <span class="st">"porc_po_v00"</span>, <span class="st">"porc_sa_v00"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"fibra_v00"</span>, <span class="st">"col_v00"</span>, <span class="st">"p17_total_v00"</span>, <span class="st">"edad_s1"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>insulina1 <span class="ot">=</span> insulina[<span class="fu">c</span>(<span class="st">"paciente"</span>, <span class="st">"insulin_v00"</span>, <span class="st">"HOMA.IR"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>diab1 <span class="ot">=</span> diab[<span class="fu">c</span>(<span class="st">"paciente"</span>, <span class="st">"diabetes"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(isoformas) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"IDURLA"</span>, <span class="st">"paciente"</span>, <span class="st">"Tanda"</span>, <span class="st">"ApoC3"</span>, <span class="st">"apoC30a_apoC31"</span>,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"apoC30b_apoC31"</span>, <span class="st">"apoC31d_apoC31"</span>, <span class="st">"apoC32d_apoC31"</span>, </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"apoC32_apoC31"</span>, <span class="st">"apoC30f_apoC31"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="efecto-batch-de-isoformas" class="level3">
+<h3 class="anchored" data-anchor-id="efecto-batch-de-isoformas">Efecto Batch de isoformas:</h3>
+<p>Compruebo efecto batch en las isoformas:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pca_iso_pre <span class="ot">=</span> isoformas[<span class="dv">3</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Para este análisis no me complico la vida e imputo a los participantes con NAs, pero habría que revisar variable por variable cuántos NAs y dependiendo del %, plantearse si usarla o no, y cómo usarla:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>(<span class="at">cores=</span><span class="dv">8</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>IMP <span class="ot">=</span> <span class="fu">missForest</span>(<span class="fu">as.matrix</span>(pca_iso_pre), <span class="at">verbose =</span> T, <span class="at">parallelize =</span> <span class="st">"forest"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  parallelizing computation of the random forest model objects
+  missForest iteration 1 in progress...done!
+    estimated error(s): 0.2952273 
+    difference(s): 1.889283e-05 
+    time: 0.58 seconds
+
+  missForest iteration 2 in progress...done!
+    estimated error(s): 0.3027388 
+    difference(s): 9.607022e-05 
+    time: 0.47 seconds</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>IMP<span class="sc">$</span>OOBerror</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    NRMSE 
+0.2952273 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>IMP <span class="ot">=</span> <span class="fu">data.frame</span>(IMP<span class="sc">$</span>ximp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Genero z-scores y hago PCA:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>IMP[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>] <span class="ot">=</span> <span class="fu">scale</span>(IMP[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>], <span class="at">center =</span> T, <span class="at">scale =</span> T)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>res_pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(IMP[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>], <span class="at">center =</span> <span class="cn">FALSE</span>, <span class="at">scale. =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>scores <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(res_pca<span class="sc">$</span>x, <span class="at">Tanda =</span> IMP<span class="sc">$</span>Tanda))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>var_exp <span class="ot">&lt;-</span> res_pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(res_pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scores, <span class="fu">aes</span>(PC1, PC2, <span class="at">color =</span> <span class="fu">as.factor</span>(Tanda))) <span class="sc">+</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_ellipse</span>(<span class="fu">aes</span>(<span class="at">fill =</span> <span class="fu">as.factor</span>(Tanda)), <span class="at">alpha =</span> <span class="fl">0.2</span>, <span class="at">geom =</span> <span class="st">"polygon"</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">paste0</span>(<span class="st">"PC1 ("</span>, <span class="fu">round</span>(var_exp[<span class="dv">1</span>], <span class="dv">1</span>), <span class="st">"%)"</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">paste0</span>(<span class="st">"PC2 ("</span>, <span class="fu">round</span>(var_exp[<span class="dv">2</span>], <span class="dv">1</span>), <span class="st">"%)"</span>),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"PCA tras limpiar valores NA/Inf"</span>) <span class="sc">+</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>No parece haber efecto batch visual (good job)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dist_IMP <span class="ot">=</span> <span class="fu">dist</span>(IMP[<span class="dv">2</span><span class="sc">:</span><span class="dv">8</span>])</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">adonis2</span>(dist_IMP <span class="sc">~</span> Tanda, <span class="at">data =</span> IMP, <span class="at">permutations =</span> <span class="dv">999</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Permutation test for adonis under reduced model
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = dist_IMP ~ Tanda, data = IMP, permutations = 999)
+          Df SumOfSqs      R2      F Pr(&gt;F)
+Model      1    11.15 0.00567 1.5958  0.141
+Residual 280  1955.85 0.99433              
+Total    281  1967.00 1.00000              </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dist_APOC3 <span class="ot">=</span> <span class="fu">dist</span>(IMP[<span class="dv">2</span>])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">adonis2</span>(dist_APOC3 <span class="sc">~</span> Tanda, <span class="at">data =</span> IMP, <span class="at">permutations =</span> <span class="dv">999</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Permutation test for adonis under reduced model
+Permutation: free
+Number of permutations: 999
+
+adonis2(formula = dist_APOC3 ~ Tanda, data = IMP, permutations = 999)
+          Df SumOfSqs      R2      F Pr(&gt;F)
+Model      1    1.836 0.00653 1.8414   0.17
+Residual 280  279.164 0.99347              
+Total    281  281.000 1.00000              </code></pre>
+</div>
+</div>
+<p>Confirmo que estadísticamente no hay efecto batch. Creo la base de datos de trabajo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>isoformas1 <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">c</span>(isoformas[<span class="dv">2</span>], IMP))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>BBDD <span class="ot">=</span> <span class="fu">merge</span>(PPlus1, isoformas1, <span class="at">by =</span> <span class="st">"paciente"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>BBDD <span class="ot">=</span> <span class="fu">merge</span>(BBDD, insulina1, <span class="at">by =</span> <span class="st">"paciente"</span>, <span class="at">all.x =</span> T)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>BBDD <span class="ot">=</span> <span class="fu">merge</span>(BBDD, diab1, <span class="at">by =</span> <span class="st">"paciente"</span>, <span class="at">all.x =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="qc" class="level2">
+<h2 class="anchored" data-anchor-id="qc">QC:</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(BBDD)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "paciente"       "idcluster"      "grupo_int_v00"  "nodo"          
+ [5] "sexo_s1"        "escola_v00"     "geaf_tot_v00"   "fuma_s1"       
+ [9] "imc_v00"        "glucosa_v00"    "coltot_v00"     "hdl_v00"       
+[13] "ldl_calc_v00"   "trigli_v00"     "hba1c_v00"      "tto_col_v00"   
+[17] "hc_v00"         "prot_v00"       "gratot_v00"     "mo_v00"        
+[21] "po_v00"         "sa_v00"         "alcoholg_v00"   "energiat_v00"  
+[25] "porc_hc_v00"    "porc_pr_v00"    "porc_gr_v00"    "porc_mo_v00"   
+[29] "porc_po_v00"    "porc_sa_v00"    "fibra_v00"      "col_v00"       
+[33] "p17_total_v00"  "edad_s1"        "Tanda"          "ApoC3"         
+[37] "apoC30a_apoC31" "apoC30b_apoC31" "apoC31d_apoC31" "apoC32d_apoC31"
+[41] "apoC32_apoC31"  "apoC30f_apoC31" "insulin_v00"    "HOMA.IR"       
+[45] "diabetes"      </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>BBDD<span class="sc">$</span>diabetes[<span class="fu">is.na</span>(BBDD<span class="sc">$</span>diabetes)] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>factores <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">35</span>, <span class="dv">45</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>BBDD[, factores] <span class="ot">=</span> <span class="fu">lapply</span>(BBDD[, factores], factor)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(BBDD)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    paciente       idcluster     grupo_int_v00      nodo    sexo_s1 escola_v00
+ Min.   : 1024   Min.   : 1024   0:157         4      :67   0:146   1: 39     
+ 1st Qu.: 3071   1st Qu.: 3138   1:125         5      :48   1:136   2: 17     
+ Median : 4226   Median : 4265                 3      :47           3: 94     
+ Mean   : 4726   Mean   : 6957                 1      :35           4:130     
+ 3rd Qu.: 5294   3rd Qu.: 6074                 6      :31           5:  2     
+ Max.   :19020   Max.   :42303                 2      :29                     
+                                               (Other):25                     
+  geaf_tot_v00     fuma_s1    imc_v00       glucosa_v00      coltot_v00   
+ Min.   :    0.0   1: 35   Min.   :26.82   Min.   : 76.0   Min.   :108.0  
+ 1st Qu.:  839.2   2: 10   1st Qu.:30.71   1st Qu.:104.0   1st Qu.:177.0  
+ Median : 2107.2   3: 17   Median :32.71   Median :112.0   Median :200.0  
+ Mean   : 2763.3   4:103   Mean   :33.19   Mean   :113.5   Mean   :202.6  
+ 3rd Qu.: 4010.5   5:115   3rd Qu.:35.53   3rd Qu.:121.8   3rd Qu.:224.0  
+ Max.   :14895.1   9:  2   Max.   :41.88   Max.   :149.0   Max.   :311.0  
+                                                           NA's   :1      
+    hdl_v00       ldl_calc_v00     trigli_v00      hba1c_v00     tto_col_v00
+ Min.   :28.00   Min.   : 39.0   Min.   : 54.0   Min.   :4.000   0:145      
+ 1st Qu.:39.00   1st Qu.:105.5   1st Qu.:101.0   1st Qu.:5.660   1:136      
+ Median :47.00   Median :123.0   Median :132.5   Median :5.900   9:  1      
+ Mean   :48.45   Mean   :125.2   Mean   :146.4   Mean   :5.917              
+ 3rd Qu.:55.00   3rd Qu.:144.0   3rd Qu.:173.0   3rd Qu.:6.200              
+ Max.   :91.00   Max.   :232.0   Max.   :502.0   Max.   :7.600              
+ NA's   :1       NA's   :11                      NA's   :22                 
+     hc_v00          prot_v00        gratot_v00         mo_v00      
+ Min.   : 95.25   Min.   : 29.50   Min.   : 36.64   Min.   : 16.66  
+ 1st Qu.:182.55   1st Qu.: 81.16   1st Qu.: 85.75   1st Qu.: 42.44  
+ Median :231.17   Median : 94.86   Median :106.56   Median : 55.60  
+ Mean   :242.89   Mean   : 96.37   Mean   :107.96   Mean   : 55.33  
+ 3rd Qu.:285.75   3rd Qu.:111.86   3rd Qu.:128.15   3rd Qu.: 66.86  
+ Max.   :600.92   Max.   :197.42   Max.   :210.80   Max.   :109.87  
+ NA's   :1        NA's   :1        NA's   :1        NA's   :1       
+     po_v00           sa_v00        alcoholg_v00      energiat_v00 
+ Min.   : 5.291   Min.   : 9.936   Min.   :  0.000   Min.   :1051  
+ 1st Qu.:13.334   1st Qu.:20.275   1st Qu.:  1.292   1st Qu.:1926  
+ Median :17.193   Median :26.032   Median :  5.769   Median :2395  
+ Mean   :18.317   Mean   :27.854   Mean   : 12.507   Mean   :2416  
+ 3rd Qu.:22.252   3rd Qu.:34.189   3rd Qu.: 18.565   3rd Qu.:2817  
+ Max.   :48.543   Max.   :82.991   Max.   :103.150   Max.   :5021  
+ NA's   :1        NA's   :1        NA's   :1         NA's   :1     
+  porc_hc_v00     porc_pr_v00      porc_gr_v00     porc_mo_v00    
+ Min.   :21.27   Min.   : 9.266   Min.   :22.82   Min.   : 8.456  
+ 1st Qu.:35.61   1st Qu.:14.260   1st Qu.:35.69   1st Qu.:18.043  
+ Median :40.25   Median :16.068   Median :40.72   Median :20.438  
+ Mean   :40.04   Mean   :16.305   Mean   :40.17   Mean   :20.651  
+ 3rd Qu.:44.47   3rd Qu.:18.305   3rd Qu.:44.21   3rd Qu.:23.040  
+ Max.   :55.93   Max.   :27.018   Max.   :56.32   Max.   :32.873  
+ NA's   :1       NA's   :1        NA's   :1       NA's   :1       
+  porc_po_v00      porc_sa_v00       fibra_v00         col_v00     
+ Min.   : 3.732   Min.   : 4.990   Min.   : 7.154   Min.   :106.4  
+ 1st Qu.: 5.513   1st Qu.: 8.756   1st Qu.:18.772   1st Qu.:316.6  
+ Median : 6.465   Median :10.190   Median :23.991   Median :371.0  
+ Mean   : 6.805   Mean   :10.273   Mean   :25.992   Mean   :387.1  
+ 3rd Qu.: 7.740   3rd Qu.:11.675   3rd Qu.:32.024   3rd Qu.:464.8  
+ Max.   :16.776   Max.   :16.116   Max.   :79.543   Max.   :782.1  
+ NA's   :1        NA's   :1        NA's   :1        NA's   :1      
+ p17_total_v00      edad_s1      Tanda      ApoC3         apoC30a_apoC31   
+ Min.   : 1.00   Min.   :55.00   1:94   Min.   :-2.1243   Min.   :-1.2861  
+ 1st Qu.: 6.00   1st Qu.:60.00   2:94   1st Qu.:-0.6446   1st Qu.:-0.5877  
+ Median : 8.00   Median :65.00   3:94   Median :-0.1518   Median :-0.1516  
+ Mean   : 7.94   Mean   :64.62          Mean   : 0.0000   Mean   : 0.0000  
+ 3rd Qu.:10.00   3rd Qu.:68.75          3rd Qu.: 0.5597   3rd Qu.: 0.2729  
+ Max.   :16.00   Max.   :75.00          Max.   : 4.1273   Max.   : 9.5285  
+                                                                           
+ apoC30b_apoC31    apoC31d_apoC31    apoC32d_apoC31    apoC32_apoC31    
+ Min.   :-2.3348   Min.   :-2.0690   Min.   :-2.0104   Min.   :-1.7414  
+ 1st Qu.:-0.6727   1st Qu.:-0.4713   1st Qu.:-0.7940   1st Qu.:-0.7197  
+ Median :-0.1045   Median :-0.1227   Median :-0.1800   Median :-0.2229  
+ Mean   : 0.0000   Mean   : 0.0000   Mean   : 0.0000   Mean   : 0.0000  
+ 3rd Qu.: 0.5635   3rd Qu.: 0.3468   3rd Qu.: 0.6735   3rd Qu.: 0.5709  
+ Max.   : 3.9551   Max.   : 6.8186   Max.   : 5.0159   Max.   : 4.0699  
+                                                                        
+ apoC30f_apoC31     insulin_v00       HOMA.IR        diabetes
+ Min.   :-1.6246   Min.   : 2.80   Min.   : 0.6983   0:143   
+ 1st Qu.:-0.7984   1st Qu.:14.10   1st Qu.: 3.7956   1:139   
+ Median :-0.2389   Median :19.30   Median : 5.2385           
+ Mean   : 0.0000   Mean   :21.97   Mean   : 6.2566           
+ 3rd Qu.: 0.6490   3rd Qu.:26.40   3rd Qu.: 7.6042           
+ Max.   : 3.7184   Max.   :93.60   Max.   :32.9985           
+                   NA's   :5       NA's   :5                 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>vars_numéricas <span class="ot">&lt;-</span> BBDD <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>()</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>crear_histograma <span class="ot">&lt;-</span> <span class="cf">function</span>(var) {</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(BBDD, <span class="fu">aes_string</span>(<span class="at">x =</span> var)) <span class="sc">+</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Histograma de"</span>, var), <span class="at">x =</span> var, <span class="at">y =</span> <span class="st">"Frecuencia"</span>) <span class="sc">+</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>lista_plots <span class="ot">&lt;-</span> <span class="fu">map</span>(vars_numéricas, crear_histograma)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+ℹ Please use tidy evaluation idioms with `aes()`.
+ℹ See also `vignette("ggplot2-in-packages")` for more information.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">walk</span>(lista_plots, print)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 11 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 22 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-10.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-11.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-12.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-15.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-16.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-17.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-18.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-19.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-20.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-21.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-22.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-23.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-24.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-25.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-26.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-27.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-28.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-29.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-30.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-31.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-32.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-33.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-34.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-35.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-36.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 5 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="TFM_files/figure-html/unnamed-chunk-14-37.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Variables a revisar: geaf_tot_v00, imc_v00, hdl_v00, trigli_v00, hc_v00, alcoholg_v00, energiat_v00, porc_po_v00, fibra_v00, apoC3, “apoC30a_apoC31”, “apoC30b_apoC31”, “apoC31d_apoC31”, “apoC32d_apoC31”, apoC32_apoC31, apoC30f_apoC31, insulin_v00, HOMA.IR.</p>
+</section>
+</section>
+<section id="análisis" class="level1">
+<h1>Análisis:</h1>
+<p>Empiezo los modelos, las variables con distribución muy lejos de la normalidad, las transformo con log</p>
+<section id="objetivo-1" class="level2">
+<h2 class="anchored" data-anchor-id="objetivo-1">Objetivo 1:</h2>
+<p>Regresiones lineales: modelos ajustados por: idcluster, centro, sexo, educación, actividad física, tabaco, MEDAS, IMC y tratamiendo dislipidémico.</p>
+<section id="glucosa_v00" class="level3">
+<h3 class="anchored" data-anchor-id="glucosa_v00">glucosa_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(glucosa_v00) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_glucosa.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="insulin_v00" class="level3">
+<h3 class="anchored" data-anchor-id="insulin_v00">insulin_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(insulin_v00) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_insulin.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="homa.ir" class="level3">
+<h3 class="anchored" data-anchor-id="homa.ir">HOMA.IR</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(HOMA.IR) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_HOMA.IR.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="hba1c_v00-es-más-o-menos-normal-no-log" class="level3">
+<h3 class="anchored" data-anchor-id="hba1c_v00-es-más-o-menos-normal-no-log">hba1c_v00 (es más o menos normal, no log)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(hba1c_v00 <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_hba1c_v00.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="hba1c_v00-versión-log" class="level3">
+<h3 class="anchored" data-anchor-id="hba1c_v00-versión-log">hba1c_v00 (versión log)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(hba1c_v00) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_hba1c_log.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="coltot_v00" class="level3">
+<h3 class="anchored" data-anchor-id="coltot_v00">coltot_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(coltot_v00 <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_coltot.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="hdl_v00" class="level3">
+<h3 class="anchored" data-anchor-id="hdl_v00">hdl_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(hdl_v00) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_hdl.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="ldl_calc_v00" class="level3">
+<h3 class="anchored" data-anchor-id="ldl_calc_v00">ldl_calc_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(ldl_calc_v00 <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb56-16"><a href="#cb56-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb56-17"><a href="#cb56-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb56-18"><a href="#cb56-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb56-19"><a href="#cb56-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb56-20"><a href="#cb56-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb56-21"><a href="#cb56-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_ldl.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="trigli_v00" class="level3">
+<h3 class="anchored" data-anchor-id="trigli_v00">trigli_v00</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log</span>(trigli_v00) <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb57-16"><a href="#cb57-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb57-17"><a href="#cb57-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb57-18"><a href="#cb57-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb57-19"><a href="#cb57-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb57-20"><a href="#cb57-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb57-21"><a href="#cb57-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_TG.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="objetivo-2" class="level2">
+<h2 class="anchored" data-anchor-id="objetivo-2">Objetivo 2:</h2>
+<p>Diferencias entre grupos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>medias <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>SD <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>P_v_a <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>) {</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  medias[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">45</span>]], mean, <span class="at">na.rm =</span> T),<span class="dv">3</span>)</span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  SD[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">45</span>]], sd, <span class="at">na.rm =</span> T),<span class="dv">3</span>)</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  modelo <span class="ot">=</span> <span class="fu">wilcox.test</span>(BBDD[[i]] <span class="sc">~</span> BBDD[[<span class="dv">45</span>]])</span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  P_v_a[[i]]<span class="ot">=</span> <span class="fu">round</span>(modelo<span class="sc">$</span>p.value,<span class="dv">3</span>)</span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(medias, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a>df_SD <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(SD, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>df_p_v_a <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(P_v_a, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_medias, df_SD, df_p_v_a))</span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_medias)</span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_medias) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"variables"</span>,<span class="st">"Media No diab"</span>, <span class="st">"Media Diab"</span>, </span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"SD No diab"</span>, <span class="st">"SD Diab"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_medias, <span class="st">"Resultados/wilcox_diabetes.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Modelos de regresión logistica: idcluster, centro, sexo, educación, actividad física, tabaco, MEDAS, IMC y tratamiendo dislipidémico. Aquí también añado grupo intervención porque si que puede haber una influencia sobre la incidencia de diabetes. Ojo: añado edad como categórica dicotómica porque parace tener una relación con apoC30a_apoC31. Este modelo, sin edad, sale similar al resultado actual, con edad como continúa, su p es igual a 1 –&gt; punto influyente pero sin interacción.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>c_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>  mod_glm <span class="ot">&lt;-</span> <span class="fu">glm</span>(diabetes <span class="sc">~</span> BBDD[[i]] <span class="sc">+</span> idcluster <span class="sc">+</span> grupo_int_v00 <span class="sc">+</span> <span class="fu">cut2</span>(edad_s1, <span class="at">g =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">cut2</span>(<span class="fu">as.numeric</span>(nodo), <span class="at">g =</span> <span class="dv">3</span>) <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> p17_total_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> BBDD)</span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>  c_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-15"><a href="#cb59-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(c_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb59-16"><a href="#cb59-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb59-17"><a href="#cb59-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb59-18"><a href="#cb59-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb59-19"><a href="#cb59-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb59-20"><a href="#cb59-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb59-21"><a href="#cb59-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_logisticas_diabetes.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>No hay suficientes participantes para utilizar nodos de forma normal y produce un sesgo. Para evitar la tendencia a infinito de algunos nodos, convierto la variable en numérica y hago terciles que se distribuirán en función a la cantidad de participantes por centro, reequilibrando la distribución.</p>
+</section>
+<section id="objetivo-3" class="level2">
+<h2 class="anchored" data-anchor-id="objetivo-3">Objetivo 3:</h2>
+<section id="anovas" class="level3">
+<h3 class="anchored" data-anchor-id="anovas">ANOVAS:</h3>
+<p>Pruebo primero con terciles de adherencia de MedDiet:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>BBDD<span class="sc">$</span>ter_medas <span class="ot">=</span> <span class="fu">cut2</span>(BBDD<span class="sc">$</span>p17_total_v00, <span class="at">g =</span> <span class="dv">3</span>)</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>medias <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>SD <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>P_v_a <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>) {</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>  medias[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">46</span>]], mean, <span class="at">na.rm =</span> T),<span class="dv">2</span>)</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>  SD[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">46</span>]], sd, <span class="at">na.rm =</span> T),<span class="dv">2</span>)</span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>  modelo <span class="ot">=</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> BBDD[[<span class="dv">46</span>]])</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a>  P_v_a[[i]]<span class="ot">=</span> <span class="fu">round</span>(<span class="fu">anova</span>(modelo)[<span class="dv">1</span>,<span class="dv">5</span>],<span class="dv">3</span>)</span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(medias, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>df_SD <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(SD, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a>df_p_v_a <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(P_v_a, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_medias, df_SD, df_p_v_a))</span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_medias)</span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_medias) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variables"</span> ,<span class="st">"Media Ter 1 (1,8)"</span>, <span class="st">"Media Ter 2 (8, 10)"</span>, <span class="st">"Media Ter 3 (10, 17)"</span>, </span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"SD Ter 1 (1,8)"</span>, <span class="st">"SD Ter 2 (8, 10)"</span>, <span class="st">"SD Ter 3 (10, 17)"</span>,</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"P_valor"</span>)</span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_medias, <span class="st">"Resultados/medias_ter_MEDAS_aov.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ancovas: ajustadas por: idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>medias <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>SD <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>P_v_a <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>) {</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>  medias[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">46</span>]], mean, <span class="at">na.rm =</span> T),<span class="dv">2</span>)</span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>  SD[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">tapply</span>(BBDD[[i]], BBDD[[<span class="dv">46</span>]], sd, <span class="at">na.rm =</span> T),<span class="dv">2</span>)</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>  modelo <span class="ot">=</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> ter_medas <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>  P_v_a[[i]]<span class="ot">=</span> <span class="fu">round</span>(<span class="fu">anova</span>(modelo)[<span class="dv">1</span>,<span class="dv">5</span>],<span class="dv">3</span>)</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(medias, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb61-15"><a href="#cb61-15" aria-hidden="true" tabindex="-1"></a>df_SD <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">map</span>(SD, <span class="sc">~</span> <span class="fu">as.list</span>(.x)))</span>
+<span id="cb61-16"><a href="#cb61-16" aria-hidden="true" tabindex="-1"></a>df_p_v_a <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(P_v_a, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb61-17"><a href="#cb61-17" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_medias, df_SD, df_p_v_a))</span>
+<span id="cb61-18"><a href="#cb61-18" aria-hidden="true" tabindex="-1"></a>df_medias <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_medias)</span>
+<span id="cb61-19"><a href="#cb61-19" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_medias) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variables"</span> ,<span class="st">"Media Ter 1 (1,8)"</span>, <span class="st">"Media Ter 2 (8, 10)"</span>, <span class="st">"Media Ter 3 (10, 17)"</span>, </span>
+<span id="cb61-20"><a href="#cb61-20" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"SD Ter 1 (1,8)"</span>, <span class="st">"SD Ter 2 (8, 10)"</span>, <span class="st">"SD Ter 3 (10, 17)"</span>,</span>
+<span id="cb61-21"><a href="#cb61-21" aria-hidden="true" tabindex="-1"></a>                        <span class="st">"P_valor"</span>)</span>
+<span id="cb61-22"><a href="#cb61-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_medias, <span class="st">"Resultados/medias_ter_MEDAS_aoc_ajust.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="regresiones-lineales" class="level3">
+<h3 class="anchored" data-anchor-id="regresiones-lineales">Regresiones lineales:</h3>
+<section id="terciles-de-medas" class="level4">
+<h4 class="anchored" data-anchor-id="terciles-de-medas">Terciles de MEDAS:</h4>
+<p>Regresión lineal asociaciones de terciles: modelos ajustados idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>r_glm1 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>r_glm2 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>SE1 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>SE2 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>p_valor1 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>p_valor2 <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> ter_medas <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>   r_glm1[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>   r_glm2[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">3</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>   SE1[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>   SE2[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">3</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>   p_valor1[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>   p_valor2[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">3</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a>df_coef1 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm1, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a>df_coef2 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm2, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a>df_SE1 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE1, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a>df_SE2 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE2, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-25"><a href="#cb62-25" aria-hidden="true" tabindex="-1"></a>df_p_valor1 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor1, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-26"><a href="#cb62-26" aria-hidden="true" tabindex="-1"></a>df_p_valor2 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor2, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb62-27"><a href="#cb62-27" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef1, df_SE1, df_p_valor1, df_coef2, df_SE2, </span>
+<span id="cb62-28"><a href="#cb62-28" aria-hidden="true" tabindex="-1"></a>                           df_p_valor2))</span>
+<span id="cb62-29"><a href="#cb62-29" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb62-30"><a href="#cb62-30" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variables"</span> ,<span class="st">"Coef Ter 2 (1,8)"</span>, <span class="st">"SE Ter 2 (8,10)"</span>, <span class="st">"P_valor Ter2"</span>, </span>
+<span id="cb62-31"><a href="#cb62-31" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Coef Ter 3 (8, 10)"</span>, <span class="st">"SE Ter 3 (10, 17)"</span>, <span class="st">"P_valor Ter3"</span>)</span>
+<span id="cb62-32"><a href="#cb62-32" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_ter_Medas.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Regresiones lineales para MEDAS y macronutrientes ajustadas por: idcluster, centro, sexo, educación, actividad física, tabaco, IMC y tratamiendo dislipidémico.</p>
+</section>
+<section id="medas" class="level4">
+<h4 class="anchored" data-anchor-id="medas">MEDAS:</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> p17_total_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00,</span>
+<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb63-14"><a href="#cb63-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-15"><a href="#cb63-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb63-16"><a href="#cb63-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb63-17"><a href="#cb63-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb63-18"><a href="#cb63-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb63-19"><a href="#cb63-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb63-20"><a href="#cb63-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb63-21"><a href="#cb63-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_MEDAS.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="hc" class="level4">
+<h4 class="anchored" data-anchor-id="hc">HC:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_hc_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> porc_gr_v00 <span class="sc">+</span> </span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb64-11"><a href="#cb64-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb64-12"><a href="#cb64-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb64-13"><a href="#cb64-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb64-14"><a href="#cb64-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb64-15"><a href="#cb64-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-16"><a href="#cb64-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb64-17"><a href="#cb64-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb64-18"><a href="#cb64-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb64-19"><a href="#cb64-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb64-20"><a href="#cb64-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb64-21"><a href="#cb64-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb64-22"><a href="#cb64-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_HC_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="prot" class="level4">
+<h4 class="anchored" data-anchor-id="prot">Prot:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_pr_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_gr_v00 <span class="sc">+</span> </span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_Prot_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="grasas-totales" class="level4">
+<h4 class="anchored" data-anchor-id="grasas-totales">Grasas totales:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_gr_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> </span>
+<span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb66-13"><a href="#cb66-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb66-14"><a href="#cb66-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb66-15"><a href="#cb66-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-16"><a href="#cb66-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb66-17"><a href="#cb66-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb66-18"><a href="#cb66-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb66-19"><a href="#cb66-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb66-20"><a href="#cb66-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb66-21"><a href="#cb66-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb66-22"><a href="#cb66-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_Grasas_totales_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="agrasas-monoinsaturados" class="level4">
+<h4 class="anchored" data-anchor-id="agrasas-monoinsaturados">AGrasas Monoinsaturados:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_mo_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> </span>
+<span id="cb67-9"><a href="#cb67-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb67-10"><a href="#cb67-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb67-11"><a href="#cb67-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb67-12"><a href="#cb67-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb67-13"><a href="#cb67-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb67-14"><a href="#cb67-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb67-15"><a href="#cb67-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-16"><a href="#cb67-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb67-17"><a href="#cb67-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb67-18"><a href="#cb67-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb67-19"><a href="#cb67-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb67-20"><a href="#cb67-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb67-21"><a href="#cb67-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb67-22"><a href="#cb67-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_AGM_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="agrasas-polinsaturados" class="level4">
+<h4 class="anchored" data-anchor-id="agrasas-polinsaturados">AGrasas Polinsaturados:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_po_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> </span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb68-12"><a href="#cb68-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb68-13"><a href="#cb68-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb68-14"><a href="#cb68-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb68-15"><a href="#cb68-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-16"><a href="#cb68-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb68-17"><a href="#cb68-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb68-18"><a href="#cb68-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb68-19"><a href="#cb68-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb68-20"><a href="#cb68-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb68-21"><a href="#cb68-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb68-22"><a href="#cb68-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_AGP_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="agrasas-saturados" class="level4">
+<h4 class="anchored" data-anchor-id="agrasas-saturados">AGrasas Saturados:</h4>
+<p>Porcentaje:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> porc_sa_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> </span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>                   alcoholg_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb69-14"><a href="#cb69-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb69-15"><a href="#cb69-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-16"><a href="#cb69-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb69-17"><a href="#cb69-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb69-18"><a href="#cb69-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb69-19"><a href="#cb69-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb69-20"><a href="#cb69-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb69-21"><a href="#cb69-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb69-22"><a href="#cb69-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_AGS_pct.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="alcoholg" class="level4">
+<h4 class="anchored" data-anchor-id="alcoholg">Alcoholg:</h4>
+<p>Gramos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> alcoholg_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb70-8"><a href="#cb70-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> energiat_v00 <span class="sc">+</span></span>
+<span id="cb70-9"><a href="#cb70-9" aria-hidden="true" tabindex="-1"></a>                   porc_sa_v00 <span class="sc">+</span> fibra_v00,</span>
+<span id="cb70-10"><a href="#cb70-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb70-11"><a href="#cb70-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb70-12"><a href="#cb70-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb70-13"><a href="#cb70-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb70-14"><a href="#cb70-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb70-15"><a href="#cb70-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-16"><a href="#cb70-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb70-17"><a href="#cb70-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb70-18"><a href="#cb70-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb70-19"><a href="#cb70-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb70-20"><a href="#cb70-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb70-21"><a href="#cb70-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb70-22"><a href="#cb70-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_alcohol_g.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="fibra" class="level4">
+<h4 class="anchored" data-anchor-id="fibra">Fibra:</h4>
+<p>Gramos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> fibra_v00 <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> porc_hc_v00 <span class="sc">+</span> porc_pr_v00 <span class="sc">+</span> energiat_v00 <span class="sc">+</span></span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>                   porc_sa_v00 <span class="sc">+</span> alcoholg_v00,</span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb71-13"><a href="#cb71-13" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb71-14"><a href="#cb71-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb71-15"><a href="#cb71-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-16"><a href="#cb71-16" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb71-17"><a href="#cb71-17" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb71-18"><a href="#cb71-18" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb71-19"><a href="#cb71-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb71-20"><a href="#cb71-20" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb71-21"><a href="#cb71-21" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb71-22"><a href="#cb71-22" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_fibra_g.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="energiat" class="level4">
+<h4 class="anchored" data-anchor-id="energiat">Energiat:</h4>
+<p>Kcal: la energía tiene un poco de cola a la derecha, utilizo transformación logarítmica para una mejor comprensión de las unidades y neutralizar el efecto de la cola:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>r_glm <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>SE <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>p_valor <span class="ot">=</span> <span class="fu">c</span>()</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>){</span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>   mod_glm <span class="ot">&lt;-</span> <span class="fu">lm</span>(BBDD[[i]] <span class="sc">~</span> <span class="fu">log</span>(energiat_v00) <span class="sc">+</span> idcluster <span class="sc">+</span> edad_s1 <span class="sc">+</span> </span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>                   nodo <span class="sc">+</span> sexo_s1 <span class="sc">+</span> escola_v00 <span class="sc">+</span> geaf_tot_v00 <span class="sc">+</span> fuma_s1 <span class="sc">+</span></span>
+<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a>                   imc_v00 <span class="sc">+</span> tto_col_v00 <span class="sc">+</span> fibra_v00 <span class="sc">+</span> alcoholg_v00,</span>
+<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> BBDD)</span>
+<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a>   r_glm[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">1</span>],<span class="dv">3</span>)</span>
+<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a>   SE[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">2</span>],<span class="dv">3</span>)</span>
+<span id="cb72-12"><a href="#cb72-12" aria-hidden="true" tabindex="-1"></a>   p_valor[[i]] <span class="ot">=</span> <span class="fu">round</span>(<span class="fu">summary</span>(mod_glm)<span class="sc">$</span>coef[<span class="dv">2</span>,<span class="dv">4</span>],<span class="dv">3</span>)</span>
+<span id="cb72-13"><a href="#cb72-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb72-14"><a href="#cb72-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-15"><a href="#cb72-15" aria-hidden="true" tabindex="-1"></a>df_coef <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(r_glm, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb72-16"><a href="#cb72-16" aria-hidden="true" tabindex="-1"></a>df_SE <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(SE, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb72-17"><a href="#cb72-17" aria-hidden="true" tabindex="-1"></a>df_p_valor <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(p_valor, <span class="sc">~</span> <span class="fu">as_tibble</span>(.x))</span>
+<span id="cb72-18"><a href="#cb72-18" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="fu">cbind</span>(df_coef, df_SE, df_p_valor))</span>
+<span id="cb72-19"><a href="#cb72-19" aria-hidden="true" tabindex="-1"></a>df_rlog <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="at">variable =</span> <span class="fu">colnames</span>(BBDD)[<span class="dv">36</span><span class="sc">:</span><span class="dv">42</span>], df_rlog)</span>
+<span id="cb72-20"><a href="#cb72-20" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(df_rlog) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Coeficiente"</span>, <span class="st">"Error_Estandar"</span>, <span class="st">"P_valor"</span>)</span>
+<span id="cb72-21"><a href="#cb72-21" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(df_rlog, <span class="st">"Resultados/regresiones_lineales_energia_kcal.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="características-basales" class="level1">
+<h1>Características basales:</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>vars <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"grupo_int_v00"</span>,<span class="st">"edad_s1"</span>, <span class="st">"sexo_s1"</span>, <span class="st">"escola_v00"</span>, <span class="st">"geaf_tot_v00"</span>, <span class="st">"fuma_s1"</span>,</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">"imc_v00"</span>, <span class="st">"glucosa_v00"</span>, <span class="st">"insulin_v00"</span>, <span class="st">"HOMA.IR"</span>,<span class="st">"hba1c_v00"</span>,</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">"coltot_v00"</span>, <span class="st">"hdl_v00"</span>, <span class="st">"ldl_calc_v00"</span>, <span class="st">"trigli_v00"</span>, <span class="st">"tto_col_v00"</span>, </span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"hc_v00"</span>, <span class="st">"prot_v00"</span>, <span class="st">"gratot_v00"</span>, <span class="st">"mo_v00"</span>, <span class="st">"po_v00"</span>, <span class="st">"sa_v00"</span>, <span class="st">"alcoholg_v00"</span>, </span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>         <span class="st">"energiat_v00"</span>, <span class="st">"porc_hc_v00"</span>, <span class="st">"porc_pr_v00"</span>, <span class="st">"porc_gr_v00"</span>, <span class="st">"porc_mo_v00"</span>, </span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>         <span class="st">"porc_po_v00"</span>, <span class="st">"porc_sa_v00"</span>, <span class="st">"fibra_v00"</span>, <span class="st">"p17_total_v00"</span>, </span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">"ApoC3"</span>, <span class="st">"apoC30a_apoC31"</span>, <span class="st">"apoC30b_apoC31"</span>,</span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">"apoC31d_apoC31"</span>, <span class="st">"apoC32d_apoC31"</span>, <span class="st">"apoC32_apoC31"</span>, <span class="st">"apoC30f_apoC31"</span>)</span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-10"><a href="#cb73-10" aria-hidden="true" tabindex="-1"></a>table1 <span class="ot">=</span> <span class="fu">CreateTableOne</span>(<span class="at">vars =</span> vars, <span class="at">strata =</span> <span class="st">"diabetes"</span>, <span class="at">data =</span> BBDD, <span class="at">test =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb73-11"><a href="#cb73-11" aria-hidden="true" tabindex="-1"></a>table1_df <span class="ot">=</span> <span class="fu">print</span>(table1, <span class="at">quote =</span> <span class="cn">FALSE</span>, <span class="at">noSpaces =</span> <span class="cn">TRUE</span>, <span class="at">printToggle =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb73-12"><a href="#cb73-12" aria-hidden="true" tabindex="-1"></a>table1_df <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">Variable =</span> <span class="fu">rownames</span>(table1_df), table1_df, <span class="at">row.names =</span> <span class="cn">NULL</span>)</span>
+<span id="cb73-13"><a href="#cb73-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-14"><a href="#cb73-14" aria-hidden="true" tabindex="-1"></a>wb <span class="ot">=</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb73-15"><a href="#cb73-15" aria-hidden="true" tabindex="-1"></a><span class="fu">addWorksheet</span>(wb, <span class="st">"TableOne"</span>)</span>
+<span id="cb73-16"><a href="#cb73-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-17"><a href="#cb73-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeData</span>(wb, <span class="st">"TableOne"</span>, table1_df)</span>
+<span id="cb73-18"><a href="#cb73-18" aria-hidden="true" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, <span class="at">file =</span> <span class="st">"Resultados/tabla_caract_basals.xlsx"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="conclusiones" class="level1">
+<h1>Conclusiones:</h1>
+<p>Por objetivos, se puede llegar a las siguientes conclusiones generales: - Objetivo 1: Hay relación entre los ratios de varias isoformas con Colesterol total, HDL, LDL y TG, siendo más fuerte esas asociaciones con Colesterol total y TG. En cuanto al metabolismo de la glucosa, también salen algunas asociaciones interesantes. - Objetivo 2: Un ratio y casi otro parecen asociarse con la diabetes, pero no hay diferencias de medias. - Objetivo 3: La dieta mediterránea no parece relacionarse en exceso con las isoformas salvo un ratio y en diferencia de medias. En modelos continuos no parece hacer relación y, en cuanto a los macronutrientes, en general no parece haber asociaciones salvo alguna asociación puntual.</p>
+<p>Otras cuestiones a tener en cuenta: No he aplicado FDR porque probablemente nos quedemos en nada, al menos en los objetivos 2 y 3, por lo que recomiendo presentarlo como un estudio piloto.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
